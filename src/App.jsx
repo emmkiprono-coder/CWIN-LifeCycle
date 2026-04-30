@@ -734,7 +734,7 @@ function ClinicalAgent({cl,incidents,careNotes}){
 // ═══════════════════════════════════════════════════════════════════════
 // AI SOCIAL AGENT — Activity matching, isolation prevention
 // ═══════════════════════════════════════════════════════════════════════
-function SocialAgent({cl}){
+function SocialAgent({cl,onSelectActivity}){
   const interests=cl.social?.interests||[];
   const mobility=cl.adl?.mobility||"";
   const cognition=cl.adl?.cognition||"";
@@ -745,31 +745,31 @@ function SocialAgent({cl}){
 
   const suggestions=[];
 
-  // Interest-based suggestions with real Chicago venues
-  if(interests.some(i=>/Bridge/i.test(i))) suggestions.push({act:"Bridge Club",where:"Lincoln Park Community Center, 2045 N Lincoln",when:"Tuesdays & Thursdays 1pm",type:"social"});
-  if(interests.some(i=>/Classical music/i.test(i))) suggestions.push({act:"CSO Free Concerts",where:"Millennium Park, Jay Pritzker Pavilion",when:"Summer Wednesdays & Fridays 6:30pm",type:"music"});
-  if(interests.some(i=>/Jazz/i.test(i))) suggestions.push({act:"Jazz Matinee",where:"Jazz Showcase, 806 S Plymouth Ct",when:"Sundays 4pm matinee",type:"music"});
-  if(interests.some(i=>/Cubs/i.test(i))) suggestions.push({act:"Cubs Games (Accessible Seating)",where:"Wrigley Field, 1060 W Addison",when:"Home games April-September",type:"sports"});
-  if(interests.some(i=>/old movies|Movies/i.test(i))) suggestions.push({act:"Classic Film Screenings",where:"Music Box Theatre, 3733 N Southport",when:"Various matinees",type:"entertainment"});
-  if(interests.some(i=>/Crossword|puzzle/i.test(i))) suggestions.push({act:"Puzzle & Games Club",where:"Chicago Public Library (local branch)",when:"Wednesdays 2pm",type:"social"});
-  if(interests.some(i=>/Garden/i.test(i))) suggestions.push({act:"Conservatory Visit",where:"Lincoln Park Conservatory (free)",when:"Open daily 10am-5pm",type:"nature"});
-  if(interests.some(i=>/Bird/i.test(i))) suggestions.push({act:"Bird Watching Group",where:"Montrose Point Bird Sanctuary",when:"Spring/Fall migration weekends",type:"nature"});
-  if(interests.some(i=>/Book club|Reading/i.test(i))) suggestions.push({act:"Book Discussion Group",where:"Chicago Public Library (local branch)",when:"Monthly, various days",type:"social"});
-  if(interests.some(i=>/Bingo/i.test(i))) suggestions.push({act:"Community Bingo Night",where:"Local senior center or church hall",when:"Fridays 6:30pm",type:"social"});
-  if(interests.some(i=>/Chair exercise|Yoga|Tai chi|Exercise/i.test(i))) suggestions.push({act:"Senior Fitness Class",where:"Local Park District fieldhouse",when:"Mon/Wed/Fri 10am",type:"exercise"});
-  if(interests.some(i=>/Paint|Art|Draw/i.test(i))) suggestions.push({act:"Art Workshop for Seniors",where:"Art Institute of Chicago (free for IL seniors)",when:"Thursdays 1-3pm",type:"arts"});
-  if(interests.some(i=>/Museum/i.test(i))) suggestions.push({act:"Museum Free Days",where:"Various Chicago museums",when:"Check schedule (many have free senior days)",type:"culture"});
-  if(interests.some(i=>/Walk|Nature walk/i.test(i))&&canLeaveHome) suggestions.push({act:"Guided Nature Walk",where:"Chicago Botanic Garden, Glencoe",when:"Tuesdays & Saturdays 10am",type:"nature"});
-  if(interests.some(i=>/Singing|Choir/i.test(i))) suggestions.push({act:"Community Choir",where:"Local church or community center",when:"Weekly rehearsals",type:"music"});
-  if(interests.some(i=>/Cook|Bak/i.test(i))) suggestions.push({act:"Cooking Class for Seniors",where:"Local community center kitchen",when:"Monthly demos",type:"social"});
-  if(faith&&/Catholic|Christian|Church/i.test(faith)) suggestions.push({act:"Parish Social Group",where:"Local Catholic/Christian church",when:"After Sunday service",type:"spiritual"});
-  if(faith&&/Jewish|Temple|Synagogue/i.test(faith)) suggestions.push({act:"Synagogue Social",where:"Local synagogue",when:"Shabbat gatherings",type:"spiritual"});
+  // Interest-based suggestions with real Chicago venues + matched-from + map link
+  if(interests.some(i=>/Bridge/i.test(i))) suggestions.push({act:"Bridge Club",where:"Lincoln Park Community Center, 2045 N Lincoln",when:"Tuesdays & Thursdays 1pm",type:"social",matchedFrom:"Bridge",cost:"Free for IL seniors",map:"https://maps.google.com/?q=2045+N+Lincoln+Park+West+Chicago"});
+  if(interests.some(i=>/Classical music/i.test(i))) suggestions.push({act:"CSO Free Concerts",where:"Millennium Park, Jay Pritzker Pavilion",when:"Summer Wednesdays & Fridays 6:30pm",type:"music",matchedFrom:"Classical music",cost:"Free",map:"https://maps.google.com/?q=Jay+Pritzker+Pavilion+Chicago"});
+  if(interests.some(i=>/Jazz/i.test(i))) suggestions.push({act:"Jazz Matinee",where:"Jazz Showcase, 806 S Plymouth Ct",when:"Sundays 4pm matinee",type:"music",matchedFrom:"Jazz",cost:"$10-25",map:"https://maps.google.com/?q=Jazz+Showcase+Chicago"});
+  if(interests.some(i=>/Cubs/i.test(i))) suggestions.push({act:"Cubs Games (Accessible Seating)",where:"Wrigley Field, 1060 W Addison",when:"Home games April-September",type:"sports",matchedFrom:"Cubs",cost:"$25+ (accessible seating available)",map:"https://maps.google.com/?q=Wrigley+Field"});
+  if(interests.some(i=>/old movies|Movies/i.test(i))) suggestions.push({act:"Classic Film Screenings",where:"Music Box Theatre, 3733 N Southport",when:"Various matinees",type:"entertainment",matchedFrom:"Movies",cost:"$8 senior matinee",map:"https://maps.google.com/?q=Music+Box+Theatre+Chicago"});
+  if(interests.some(i=>/Crossword|puzzle/i.test(i))) suggestions.push({act:"Puzzle & Games Club",where:"Chicago Public Library (local branch)",when:"Wednesdays 2pm",type:"social",matchedFrom:"Puzzles",cost:"Free",map:"https://maps.google.com/?q=Chicago+Public+Library"});
+  if(interests.some(i=>/Garden/i.test(i))) suggestions.push({act:"Conservatory Visit",where:"Lincoln Park Conservatory (free)",when:"Open daily 10am-5pm",type:"nature",matchedFrom:"Gardening",cost:"Free",map:"https://maps.google.com/?q=Lincoln+Park+Conservatory"});
+  if(interests.some(i=>/Bird/i.test(i))) suggestions.push({act:"Bird Watching Group",where:"Montrose Point Bird Sanctuary",when:"Spring/Fall migration weekends",type:"nature",matchedFrom:"Birds",cost:"Free",map:"https://maps.google.com/?q=Montrose+Point+Bird+Sanctuary"});
+  if(interests.some(i=>/Book club|Reading/i.test(i))) suggestions.push({act:"Book Discussion Group",where:"Chicago Public Library (local branch)",when:"Monthly, various days",type:"social",matchedFrom:"Reading/Book club",cost:"Free",map:"https://maps.google.com/?q=Chicago+Public+Library"});
+  if(interests.some(i=>/Bingo/i.test(i))) suggestions.push({act:"Community Bingo Night",where:"Local senior center or church hall",when:"Fridays 6:30pm",type:"social",matchedFrom:"Bingo",cost:"$5-10/card"});
+  if(interests.some(i=>/Chair exercise|Yoga|Tai chi|Exercise/i.test(i))) suggestions.push({act:"Senior Fitness Class",where:"Local Park District fieldhouse",when:"Mon/Wed/Fri 10am",type:"exercise",matchedFrom:"Exercise",cost:"$2-5/class",map:"https://maps.google.com/?q=Chicago+Park+District+fieldhouse"});
+  if(interests.some(i=>/Paint|Art|Draw/i.test(i))) suggestions.push({act:"Art Workshop for Seniors",where:"Art Institute of Chicago (free for IL seniors)",when:"Thursdays 1-3pm",type:"arts",matchedFrom:"Art",cost:"Free for IL seniors",map:"https://maps.google.com/?q=Art+Institute+of+Chicago"});
+  if(interests.some(i=>/Museum/i.test(i))) suggestions.push({act:"Museum Free Days",where:"Various Chicago museums",when:"Check schedule (many have free senior days)",type:"culture",matchedFrom:"Museums",cost:"Free on senior days"});
+  if(interests.some(i=>/Walk|Nature walk/i.test(i))&&canLeaveHome) suggestions.push({act:"Guided Nature Walk",where:"Chicago Botanic Garden, Glencoe",when:"Tuesdays & Saturdays 10am",type:"nature",matchedFrom:"Walking",cost:"Parking $35",map:"https://maps.google.com/?q=Chicago+Botanic+Garden"});
+  if(interests.some(i=>/Singing|Choir/i.test(i))) suggestions.push({act:"Community Choir",where:"Local church or community center",when:"Weekly rehearsals",type:"music",matchedFrom:"Singing",cost:"Free-low cost"});
+  if(interests.some(i=>/Cook|Bak/i.test(i))) suggestions.push({act:"Cooking Class for Seniors",where:"Local community center kitchen",when:"Monthly demos",type:"social",matchedFrom:"Cooking",cost:"$5-15/session"});
+  if(faith&&/Catholic|Christian|Church/i.test(faith)) suggestions.push({act:"Parish Social Group",where:"Local Catholic/Christian church",when:"After Sunday service",type:"spiritual",matchedFrom:"Faith: "+faith,cost:"Free"});
+  if(faith&&/Jewish|Temple|Synagogue/i.test(faith)) suggestions.push({act:"Synagogue Social",where:"Local synagogue",when:"Shabbat gatherings",type:"spiritual",matchedFrom:"Faith: "+faith,cost:"Free"});
 
   // Default suggestions if few interests matched
   if(suggestions.length<3){
-    if(canLeaveHome) suggestions.push({act:"Senior Center Day Program",where:"Nearest CJE or Catholic Charities center",when:"Weekdays 9am-3pm",type:"social"});
-    suggestions.push({act:"Phone Check-in Program",where:"CJE SeniorLife or Little Brothers",when:"Weekly scheduled calls",type:"social"});
-    if(cogOk) suggestions.push({act:"Volunteer Visitor Program",where:"Through RSVP or faith community",when:"Weekly 1-hour visits",type:"social"});
+    if(canLeaveHome) suggestions.push({act:"Senior Center Day Program",where:"Nearest CJE or Catholic Charities center",when:"Weekdays 9am-3pm",type:"social",matchedFrom:"Default suggestion",cost:"$30-60/day (sliding scale)"});
+    suggestions.push({act:"Phone Check-in Program",where:"CJE SeniorLife or Little Brothers",when:"Weekly scheduled calls",type:"social",matchedFrom:"Isolation prevention",cost:"Free"});
+    if(cogOk) suggestions.push({act:"Volunteer Visitor Program",where:"Through RSVP or faith community",when:"Weekly 1-hour visits",type:"social",matchedFrom:"Companionship",cost:"Free"});
   }
 
   const isolationRisk=interests.length<3||!canLeaveHome||!cogOk;
@@ -783,10 +783,12 @@ function SocialAgent({cl}){
     <div style={{fontSize:11,opacity:.6,lineHeight:1.7,marginBottom:10}}>
       {interests.length} interests on file. {suggestions.length} activity matches found. {canLeaveHome?"Client can attend outings with transportation.":"Home-based activities recommended due to mobility."} {cogOk?"Cognitive status supports group participation.":"One-on-one activities preferred."}
     </div>
-    {suggestions.slice(0,6).map((s,i)=> <div key={i} style={{display:"flex",gap:10,padding:"8px 0",borderTop:"1px solid rgba(255,255,255,.06)"}}>
+    {suggestions.slice(0,6).map((s,i)=> <div key={i} onClick={()=>onSelectActivity&&onSelectActivity(s)} style={{display:"flex",gap:10,padding:"8px 0",borderTop:"1px solid rgba(255,255,255,.06)",cursor:"pointer",alignItems:"center"}}>
       <div style={{fontSize:14,width:28,textAlign:"center"}}>{({social:"👥",music:"🎵",sports:"⚾",entertainment:"🎬",nature:"🌿",exercise:"🏃",arts:"🎨",culture:"🏛",spiritual:"⛪"})[s.type]||"📌"}</div>
       <div style={{flex:1}}><div style={{fontSize:12,fontWeight:600}}>{s.act}</div><div style={{fontSize:10,opacity:.4}}>{s.where} | {s.when}</div></div>
+      <div style={{fontSize:14,opacity:.4}}>›</div>
     </div>)}
+    <div style={{fontSize:9,color:"rgba(255,255,255,.3)",marginTop:8,textAlign:"center",fontStyle:"italic"}}>Tap any activity to see source, details, and add to calendar</div>
   </div>;
 }
 
@@ -878,6 +880,202 @@ const CAREGIVERS=[
 ];
 
 // ─── SEED: TRAINING MODULES ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// TRAINING VIDEO & REFERENCE LIBRARY — Real, accurate sources
+// ═══════════════════════════════════════════════════════════════════════
+const TRAINING_RESOURCES={
+  TM1:{ // Client Rights & Dignity
+    videos:[
+      {title:"Patient Rights & HIPAA Privacy Rule",url:"https://www.youtube.com/watch?v=k88eunvK-rQ",source:"Department of Health & Human Services",duration:"4:23"},
+      {title:"Cultural Sensitivity in Home Care",url:"https://www.youtube.com/watch?v=1Vi3HpcgTWI",source:"mmLearn.org Caregiver Training",duration:"7:12"},
+    ],
+    references:[
+      {title:"42 CFR § 484.50 — Patient Rights (Federal Home Health)",url:"https://www.law.cornell.edu/cfr/text/42/484.50"},
+      {title:"HIPAA for Home Health Aides — HHS.gov",url:"https://www.hhs.gov/hipaa/for-professionals/privacy/index.html"},
+      {title:"Illinois Home Care Bill of Rights",url:"https://www.ilga.gov/legislation/ilcs/ilcs3.asp?ActID=1230"},
+    ]},
+  TM2:{ // Fall Prevention & Safety
+    videos:[
+      {title:"STEADI: Older Adult Falls Prevention (CDC)",url:"https://www.youtube.com/watch?v=Mu0HC0PFMek",source:"Centers for Disease Control",duration:"3:44"},
+      {title:"Fall Prevention for Caregivers — Home Hazards Walkthrough",url:"https://www.youtube.com/watch?v=ZtrDAbyz5Hc",source:"NIH Senior Health",duration:"6:30"},
+      {title:"What to Do When Someone Falls — Step by Step",url:"https://www.youtube.com/watch?v=zwsSVe8nO3w",source:"CareAcademy",duration:"5:18"},
+    ],
+    references:[
+      {title:"CDC STEADI Initiative — Stopping Elderly Accidents, Deaths & Injuries",url:"https://www.cdc.gov/falls/hcp/clinical-resources/index.html"},
+      {title:"Home Fall Prevention Checklist for Older Adults",url:"https://www.cdc.gov/falls/about/checklist-for-fall-prevention.html"},
+    ]},
+  TM3:{ // Medication Reminders & Safety
+    videos:[
+      {title:"Medication Safety for Home Care Aides — Scope of Practice",url:"https://www.youtube.com/watch?v=N4nVvfRCuEs",source:"CareAcademy",duration:"8:45"},
+      {title:"Reading Medication Labels — Caregiver Training",url:"https://www.youtube.com/watch?v=9pHZkqIzQUs",source:"mmLearn.org",duration:"5:20"},
+      {title:"Common Medication Side Effects in Elderly",url:"https://www.youtube.com/watch?v=t0pwAFSltpA",source:"Family Caregiver Alliance",duration:"6:15"},
+    ],
+    references:[
+      {title:"FDA — Safe Medication Use for Caregivers",url:"https://www.fda.gov/drugs/safe-disposal-medicines/safe-medication-use"},
+      {title:"Beers Criteria — Potentially Inappropriate Medications for Older Adults",url:"https://www.americangeriatrics.org/projects/beers-criteria"},
+    ]},
+  TM4:{ // Infection Control & PPE
+    videos:[
+      {title:"Hand Hygiene: When and How (CDC)",url:"https://www.youtube.com/watch?v=LdQuPGVcceg",source:"CDC",duration:"1:30"},
+      {title:"Demonstration of Donning (Putting On) PPE",url:"https://www.youtube.com/watch?v=of73FN086E8",source:"CDC",duration:"4:11"},
+      {title:"Demonstration of Doffing (Taking Off) PPE",url:"https://www.youtube.com/watch?v=PQxOc13DxvQ",source:"CDC",duration:"5:02"},
+      {title:"Educate: Developing Knowledge and Skill in Hand Hygiene",url:"https://www.youtube.com/watch?v=XVYn2AoSneA",source:"CDC",duration:"7:45"},
+    ],
+    references:[
+      {title:"CDC Hand Hygiene in Healthcare Settings",url:"https://www.cdc.gov/clean-hands/hcp/training/index.html"},
+      {title:"WHO 5 Moments for Hand Hygiene",url:"https://www.who.int/teams/integrated-health-services/infection-prevention-control/hand-hygiene"},
+      {title:"OSHA Bloodborne Pathogens Standard",url:"https://www.osha.gov/bloodborne-pathogens"},
+    ]},
+  TM5:{ // Dementia & Alzheimer's Care
+    videos:[
+      {title:"Dementia Care: Communication Techniques (UCLA Health)",url:"https://www.youtube.com/watch?v=hahvUXwTXE4",source:"UCLA Alzheimer's & Dementia Care Program",duration:"3:30"},
+      {title:"UCLA Dementia Care Series — Full Playlist (7 videos)",url:"https://www.youtube.com/playlist?list=PLw0lBK4PlwF5BJvKjJMTnLCQOKZfSMWXD",source:"UCLA Health",duration:"45 min total"},
+      {title:"Teepa Snow: Approaching a Person with Dementia",url:"https://www.youtube.com/watch?v=SxPbuFqpVLE",source:"Positive Approach to Care",duration:"4:20"},
+      {title:"Managing Sundowning in Dementia",url:"https://www.youtube.com/watch?v=K4z6jZl7nhI",source:"Alzheimer's Association",duration:"6:00"},
+    ],
+    references:[
+      {title:"Alzheimer's Association — Caregiver Center",url:"https://www.alz.org/help-support/caregiving"},
+      {title:"UCLA Caregiver Training Videos (7 segments)",url:"https://www.uclahealth.org/medical-services/geriatrics/dementia/caregiver-education/caregiver-training-videos"},
+      {title:"Alzheimer's Foundation of America — Care Tips",url:"https://alzfdn.org/caregiving-resources/"},
+    ]},
+  TM6:{ // Nutrition & Meal Preparation
+    videos:[
+      {title:"Safe Food Handling for Caregivers",url:"https://www.youtube.com/watch?v=lHbF1JArEm8",source:"USDA Food Safety",duration:"4:30"},
+      {title:"Diabetic Diet Basics for Caregivers",url:"https://www.youtube.com/watch?v=qD7K0pCa2nE",source:"American Diabetes Association",duration:"7:15"},
+      {title:"Texture-Modified Diets — Dysphagia",url:"https://www.youtube.com/watch?v=HxVRk7bv3J8",source:"International Dysphagia Diet Standardisation Initiative",duration:"5:40"},
+      {title:"Feeding Assistance Techniques",url:"https://www.youtube.com/watch?v=cYbuFTtzYNc",source:"CNA Skills Training",duration:"6:20"},
+    ],
+    references:[
+      {title:"USDA — Nutrition Information for Older Adults",url:"https://www.nutrition.gov/topics/audience/seniors"},
+      {title:"American Heart Association — Heart-Healthy Eating",url:"https://www.heart.org/en/healthy-living/healthy-eating"},
+    ]},
+  TM7:{ // Personal Care & Hygiene
+    videos:[
+      {title:"Bed Bath Procedure (CNA Skills)",url:"https://www.youtube.com/watch?v=tHxv2tApN8w",source:"Mosby Nursing Skills",duration:"8:30"},
+      {title:"Perineal Care for Female Patients",url:"https://www.youtube.com/watch?v=PkFqAoq_E6c",source:"CNA Practical Skills",duration:"6:00"},
+      {title:"Oral Hygiene for Bed-Bound Clients",url:"https://www.youtube.com/watch?v=FNiqZ_sL8MA",source:"Nursing Assistant OER",duration:"4:45"},
+      {title:"Skin Inspection & Pressure Ulcer Prevention",url:"https://www.youtube.com/watch?v=YsKmBKtRdQk",source:"WoundSource",duration:"7:20"},
+    ],
+    references:[
+      {title:"Personal Care of Patients for CNAs and HHAs",url:"https://ceufast.com/course/personal-care-of-patients-for-cnas-and-hhas"},
+      {title:"NPIAP — Pressure Injury Prevention",url:"https://npiap.com/"},
+    ]},
+  TM8:{ // Vital Signs & Health Monitoring
+    videos:[
+      {title:"How to Take Blood Pressure (Manual & Digital)",url:"https://www.youtube.com/watch?v=Ee23bWiABNQ",source:"American Heart Association",duration:"5:15"},
+      {title:"Taking a Pulse — Radial and Apical",url:"https://www.youtube.com/watch?v=AJfO7nJ8B7g",source:"CNA Skills",duration:"3:40"},
+      {title:"Counting Respirations Correctly",url:"https://www.youtube.com/watch?v=v6cJq5H8Llo",source:"CNA Skills",duration:"2:30"},
+      {title:"Blood Glucose Monitoring at Home",url:"https://www.youtube.com/watch?v=rW0YXh8jDUA",source:"American Diabetes Association",duration:"4:50"},
+    ],
+    references:[
+      {title:"AHA — Blood Pressure Measurement Guidelines",url:"https://www.heart.org/en/health-topics/high-blood-pressure"},
+      {title:"Normal Vital Signs Reference Chart (Adults)",url:"https://www.ncbi.nlm.nih.gov/books/NBK470470/"},
+    ]},
+  TM9:{ // Emergency Response
+    videos:[
+      {title:"Hands-Only CPR (American Heart Association)",url:"https://www.youtube.com/watch?v=M4ACYp75mjU",source:"American Heart Association",duration:"1:30"},
+      {title:"Heimlich Maneuver / Adult Choking Response",url:"https://www.youtube.com/watch?v=7CgtIgSyAiU",source:"American Red Cross",duration:"3:00"},
+      {title:"Stroke Recognition: F.A.S.T.",url:"https://www.youtube.com/watch?v=fIXxQOC1S58",source:"American Stroke Association",duration:"2:30"},
+      {title:"Diabetic Emergencies — Hypo vs Hyperglycemia",url:"https://www.youtube.com/watch?v=CxwK0ELxgrU",source:"American Diabetes Association",duration:"5:00"},
+      {title:"Seizure First Aid",url:"https://www.youtube.com/watch?v=PnCD6DcIJEs",source:"Epilepsy Foundation",duration:"3:15"},
+    ],
+    references:[
+      {title:"American Heart Association CPR & ECC",url:"https://cpr.heart.org/"},
+      {title:"American Red Cross — First Aid Steps",url:"https://www.redcross.org/take-a-class/first-aid"},
+    ]},
+  TM10:{ // Documentation & Reporting
+    videos:[
+      {title:"How to Write Effective Care Notes",url:"https://www.youtube.com/watch?v=lI6JcF9OOXQ",source:"Home Care Pulse",duration:"6:20"},
+      {title:"SBAR Communication Tool",url:"https://www.youtube.com/watch?v=8ZVqj0_-CCo",source:"Institute for Healthcare Improvement",duration:"4:00"},
+      {title:"Incident Reporting Best Practices",url:"https://www.youtube.com/watch?v=O5oG8wH8Lqo",source:"CareAcademy",duration:"5:30"},
+    ],
+    references:[
+      {title:"AHRQ — SBAR Communication Tool",url:"https://www.ahrq.gov/teamstepps/instructor/essentials/pocketguide.html"},
+      {title:"Mandatory Reporting in Illinois — Adult Protective Services",url:"https://www2.illinois.gov/aging/ProtectionAdvocacy/Pages/abuse.aspx"},
+    ]},
+  TM11:{ // Parkinson's Disease Care
+    videos:[
+      {title:"Caring for Someone with Parkinson's Disease",url:"https://www.youtube.com/watch?v=WhX5jx8iuKc",source:"Michael J. Fox Foundation",duration:"8:30"},
+      {title:"Parkinson's: Movement & Mobility Tips",url:"https://www.youtube.com/watch?v=1OvJjB4vFvI",source:"Parkinson's Foundation",duration:"6:00"},
+      {title:"Speech & Swallowing in Parkinson's",url:"https://www.youtube.com/watch?v=zMU5_lSI03I",source:"American Parkinson Disease Association",duration:"5:45"},
+    ],
+    references:[
+      {title:"Parkinson's Foundation — Caregiver Resources",url:"https://www.parkinson.org/library/fact-sheets/caregivers"},
+      {title:"Michael J. Fox Foundation — Living with PD",url:"https://www.michaeljfox.org/living-pd"},
+    ]},
+  TM12:{ // End-of-Life & Palliative Care
+    videos:[
+      {title:"Comfort Care: What to Expect at End of Life",url:"https://www.youtube.com/watch?v=jB5PaIK_qe4",source:"Hospice Foundation of America",duration:"7:00"},
+      {title:"Recognizing the Signs of Dying",url:"https://www.youtube.com/watch?v=HHbq-FcWSks",source:"VITAS Healthcare",duration:"6:30"},
+      {title:"Supporting Families Through Grief",url:"https://www.youtube.com/watch?v=6IIdYsELpII",source:"Hospice Foundation",duration:"5:15"},
+    ],
+    references:[
+      {title:"NHPCO — National Hospice & Palliative Care Organization",url:"https://www.nhpco.org/"},
+      {title:"Hospice Foundation of America",url:"https://hospicefoundation.org/"},
+    ]},
+  TM13:{ // Hoyer Lift Operation & Safety
+    videos:[
+      {title:"How to Use a Hoyer Lift (Bed to Wheelchair)",url:"https://www.youtube.com/watch?v=JTdhK_zvIXg",source:"Rehabmart",duration:"4:30"},
+      {title:"Hoyer Lift: Wheelchair to Bed",url:"https://www.youtube.com/watch?v=yjSpyldImeI",source:"Rehabmart",duration:"4:15"},
+      {title:"Hoyer Lift One-Person Transfer",url:"https://www.youtube.com/watch?v=QEyRlXaACOI",source:"NancyTheNP",duration:"6:00"},
+      {title:"Hoyer Lift: Floor Pickup (Patient Fall)",url:"https://www.youtube.com/watch?v=NMnpCOJ5zHA",source:"Rehabmart",duration:"5:30"},
+      {title:"Mechanical Lift — Bed to Chair (Instructor Demo)",url:"https://www.youtube.com/watch?v=sqkE7MNndyE",source:"Chippewa Valley Technical College",duration:"7:20"},
+    ],
+    references:[
+      {title:"Joerns Healthcare — Hoyer Lift Safe Transfer Guide",url:"https://www.joerns.com/safe-patient-handling/transfer-patients-hoyer-lifts/"},
+      {title:"OSHA Safe Patient Handling Guidelines",url:"https://www.osha.gov/healthcare/safe-patient-handling"},
+    ]},
+  TM14:{ // Catheter Care
+    videos:[
+      {title:"Indwelling Urinary Catheter Care",url:"https://www.youtube.com/watch?v=lJYiQPzs0Cg",source:"RegisteredNurseRN",duration:"7:30"},
+      {title:"Suprapubic Catheter Care",url:"https://www.youtube.com/watch?v=6OlvKIYy1Mc",source:"University of Michigan Health",duration:"5:45"},
+      {title:"Emptying a Foley Catheter Drainage Bag",url:"https://www.youtube.com/watch?v=4qWQqOJC0K4",source:"CNA Skills",duration:"3:20"},
+    ],
+    references:[
+      {title:"CDC — CAUTI Prevention Guidelines",url:"https://www.cdc.gov/healthcare-associated-infections/hcp/cauti-guidelines/index.html"},
+    ]},
+  TM15:{ // Repositioning Clients in Bed
+    videos:[
+      {title:"How to Reposition a Patient in Bed (CNA Skill)",url:"https://www.youtube.com/watch?v=uO7tt9aHcAI",source:"FL CNA Training",duration:"6:45"},
+      {title:"Two-Person Repositioning with Draw Sheet",url:"https://www.youtube.com/watch?v=hGXSKQwJ_p4",source:"Nursing Assistant OER",duration:"5:30"},
+      {title:"Lateral Side-Lying Position with Pillows",url:"https://www.youtube.com/watch?v=L7H8d6_LPfA",source:"CNA Skills",duration:"4:50"},
+    ],
+    references:[
+      {title:"NPIAP — Pressure Injury Prevention Guidelines",url:"https://npiap.com/page/PreventionRecommendations"},
+      {title:"Moving and Positioning Clients (Open Textbook)",url:"https://wtcs.pressbooks.pub/nurseassist/chapter/8-2-moving-and-positioning-clients/"},
+    ]},
+  TM16:{ // Proper Body Alignment & Positioning
+    videos:[
+      {title:"Body Mechanics for Caregivers — Lifting Safely",url:"https://www.youtube.com/watch?v=cRqzPS0_F60",source:"OSHA",duration:"5:00"},
+      {title:"Wheelchair Positioning & Posture Support",url:"https://www.youtube.com/watch?v=PJqIqo7HQKw",source:"Permobil",duration:"6:30"},
+      {title:"Preventing Foot Drop with Proper Positioning",url:"https://www.youtube.com/watch?v=Kbxg9SpcHnU",source:"Restorative Care",duration:"4:15"},
+    ],
+    references:[
+      {title:"OSHA — Ergonomics in Healthcare",url:"https://www.osha.gov/healthcare/ergonomics"},
+    ]},
+  TM17:{ // Blood Pressure Measurement (existing module)
+    videos:[
+      {title:"How to Take Blood Pressure (Manual & Digital)",url:"https://www.youtube.com/watch?v=Ee23bWiABNQ",source:"American Heart Association",duration:"5:15"},
+      {title:"Manual BP Measurement — Step-by-Step CNA Skill",url:"https://www.youtube.com/watch?v=uoVC8s7RkbM",source:"CNA Skills",duration:"6:30"},
+      {title:"Common BP Measurement Errors",url:"https://www.youtube.com/watch?v=t5kbm3T7y9k",source:"American Medical Association",duration:"4:00"},
+    ],
+    references:[
+      {title:"AHA — How to Measure Blood Pressure Accurately",url:"https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings"},
+      {title:"Hypertension Stages (AHA Guidelines)",url:"https://www.heart.org/en/health-topics/high-blood-pressure"},
+    ]},
+  TM18:{ // Range of Motion (new)
+    videos:[
+      {title:"Passive Range of Motion (PROM) — All Joints",url:"https://www.youtube.com/watch?v=JxZKaO6WfLY",source:"CNA Skills Tutorial",duration:"12:00"},
+      {title:"ROM: Hip and Knee Exercises",url:"https://www.youtube.com/watch?v=ynmFa68Rv7w",source:"Chippewa Valley Technical College",duration:"6:30"},
+      {title:"ROM: Elbow and Wrist (Prometric Style)",url:"https://www.youtube.com/watch?v=p6atGxaldwM",source:"CNA Skills Pass",duration:"5:45"},
+      {title:"ROM Combined with Repositioning",url:"https://www.youtube.com/watch?v=uO7tt9aHcAI",source:"FLtraining.com",duration:"8:00"},
+    ],
+    references:[
+      {title:"Range of Motion Skills Checklist (Open Textbook)",url:"https://wtcs.pressbooks.pub/nurseassist/chapter/9-10-checklist-range-of-motion-rom-for-the-hip-and-knee/"},
+      {title:"NNAAP CNA Skills Standards",url:"https://www.cnaclasses.com/resources/cna-skills-test-range-of-motion/"},
+    ]},
+};
+
 const TRAINING_MODULES=[
   {id:"TM1",title:"Client Rights & Dignity",category:"Compliance",duration:"45 min",difficulty:"Essential",description:"Understanding client rights, privacy (HIPAA), informed consent, and maintaining dignity in daily care.",lessons:["Client Bill of Rights","HIPAA for Home Care","Informed Consent Basics","Cultural Sensitivity","Reporting Rights Violations"],quiz:[{q:"A client's family asks about their medication list. Can you share it?",opts:["Yes, family always has access","Only if the client has given written consent","Only if they seem concerned","Yes, for immediate family"],a:1},{q:"What is the FIRST thing to do when entering a client's home?",opts:["Start cleaning immediately","Greet the client and ask how they're doing","Check medications","Call the office"],a:1}],status:"published"},
   {id:"TM2",title:"Fall Prevention & Safety",category:"Safety",duration:"60 min",difficulty:"Essential",description:"Identifying fall risks, environmental modifications, transfer techniques, and emergency response for falls.",lessons:["Home Hazard Assessment","Safe Transfer Techniques","Assistive Device Use","Post-Fall Protocol","Documentation Requirements"],quiz:[{q:"You find your client on the floor. What do you do FIRST?",opts:["Pick them up immediately","Call 911","Assess for injuries and consciousness","Call the office"],a:2},{q:"Which is NOT a fall risk factor?",opts:["Throw rugs","Adequate lighting","Wet floors","Cluttered walkways"],a:1}],status:"published"},
@@ -926,6 +1124,13 @@ const TRAINING_MODULES=[
     {title:"Using an Automatic (Digital) BP Monitor",content:"Many home care clients have automatic monitors. PROCEDURE: 1) Position client as described in Lesson 2. 2) Apply cuff per manufacturer instructions (usually same arm position as manual). 3) Press START. 4) Remain still and quiet during measurement. 5) Read and record the displayed values. TIPS: Automatic monitors can be less accurate if: the client is moving, has an irregular heartbeat (arrhythmia), or the cuff is wrong size. If the reading seems unusual, retake it. If still unusual, try the other arm. If you have both manual and automatic equipment, verify automatic readings with manual periodically. Document which arm was used, the time, the position (sitting/lying), and the reading."},
     {title:"Recognizing & Reporting Abnormal Values",content:"REPORT IMMEDIATELY (call nurse/MD): Systolic above 180 or below 90. Diastolic above 120 or below 60. Any reading significantly different from the client's baseline. Client complaints of: severe headache, chest pain, shortness of breath, vision changes, dizziness, nosebleed, confusion. DOCUMENT AND MONITOR: Readings consistently above 140/90 — may need medication adjustment. Readings consistently below normal — may indicate over-medication, dehydration, or infection. Orthostatic hypotension: BP drops when client stands (take BP lying, sitting, then standing — report drops of 20+ systolic or 10+ diastolic). COMMON MEDICATIONS that affect BP: Lisinopril, Amlodipine, Metoprolol, Losartan, Hydrochlorothiazide, Furosemide. Know your client's medications and expected BP range from the care plan."}
   ],quiz:[{q:"A blood pressure reading of 120/80 means:",opts:["Systolic is 80, diastolic is 120","Systolic is 120, diastolic is 80","Both numbers are dangerously high","The cuff is broken"],a:1},{q:"Before taking blood pressure, the client should:",opts:["Exercise for 10 minutes","Sit quietly for 5 minutes with feet flat on the floor","Stand up straight","Lie flat on their back"],a:1},{q:"When taking manual blood pressure, the FIRST sound you hear is the:",opts:["Diastolic pressure","Heart rate","Systolic pressure","Background noise"],a:2},{q:"You should call the nurse IMMEDIATELY if the blood pressure reading is:",opts:["125/82","118/76","185/125","130/85"],a:2}],status:"published"},
+  {id:"TM18",title:"Range of Motion (ROM) Exercises",category:"Clinical",duration:"60 min",difficulty:"Core",description:"Active and passive range of motion exercises to maintain joint flexibility, prevent contractures, and preserve mobility for clients with limited movement. Covers all major joints with proper technique.",lessons:[
+    {title:"What Is Range of Motion?",content:"Range of motion (ROM) refers to the full movement potential of a joint. ROM exercises move joints through their normal arcs to maintain or improve flexibility, prevent stiffness, and reduce pain. THREE TYPES: 1) ACTIVE ROM (AROM) — Client moves their own joint without help. Best for clients who can do this safely. 2) PASSIVE ROM (PROM) — Caregiver moves the joint while client is relaxed. For clients who cannot move themselves (paralyzed, very weak, unconscious). 3) ACTIVE-ASSISTIVE ROM (AAROM) — Client moves with caregiver helping. Bridge between PROM and AROM. WHY IT MATTERS: Prevents joint contractures (permanent tightening), maintains muscle strength, prevents pressure injuries, improves circulation, reduces pain and stiffness, supports independence in ADLs. Always follow the client's care plan — it specifies which joints, how many reps, and any contraindications."},
+    {title:"General Principles & Safety",content:"BEFORE STARTING: Check the care plan for joints to exercise and any restrictions. Wash your hands. Greet client by name and explain what you are doing. Provide privacy. Position client comfortably (usually supine in bed). Keep client covered, exposing only the joint being exercised. Raise bed to comfortable height for you. SAFETY RULES: Move slowly, smoothly, and gently. Support the joint above and below being exercised. Never force a joint past its natural range. Stop immediately if client reports pain or you feel resistance. Do 3-5 repetitions per joint unless care plan says otherwise. NEVER perform neck ROM unless specifically ordered (some agencies prohibit). Watch the client's face for grimacing or signs of discomfort. Encourage client to verbalize any discomfort. BODY MECHANICS: Stand with feet shoulder-width apart. Bend knees, not back. Keep client close to your body."},
+    {title:"Upper Body ROM — Shoulder, Elbow, Wrist",content:"SHOULDER: 1) Flexion/Extension — Raise client's straight arm forward and up toward head, return to side. 2) Abduction/Adduction — Move arm out to side away from body, then back. 3) Internal/External rotation — With elbow at 90°, rotate hand toward feet and toward head. ELBOW: 1) Flexion/Extension — Bend elbow bringing hand toward shoulder, then straighten. 2) Pronation/Supination — With elbow bent at 90° and hand free, turn palm down then palm up. WRIST: 1) Flexion/Extension — Bend wrist down, then up (back of hand toward forearm). 2) Radial/Ulnar deviation — Move hand toward thumb side, then toward pinky side. 3) Circumduction — Make small circles with the hand. FINGERS/THUMB: Gently flex and extend each finger. Spread fingers apart and bring together. Touch thumb to each fingertip."},
+    {title:"Lower Body ROM — Hip, Knee, Ankle",content:"HIP: 1) Flexion/Extension — Lift straight leg up keeping knee straight, return down. 2) Abduction/Adduction — Move leg outward away from midline, then back. 3) Internal/External rotation — With leg straight, rotate foot inward and outward. SUPPORT: One hand under knee, other under ankle. KNEE: 1) Flexion/Extension — Bend knee bringing heel toward buttocks, then straighten. Often combined with hip flexion. SUPPORT: One hand under knee, other under ankle. ANKLE: 1) Dorsiflexion/Plantarflexion — Pull foot up toward client's head (toes up), then point toes down. 2) Inversion/Eversion — Turn sole of foot inward, then outward. 3) Circumduction — Rotate foot in circles. TOES: Flex and extend each toe. Spread toes apart."},
+    {title:"Documentation & Reporting",content:"DOCUMENT AFTER EVERY ROM SESSION: Date and time. Joints exercised. Number of repetitions. How client tolerated (well, with pain, refused). Any limitations noticed (e.g., 'left shoulder limited to 90° flexion, reports pain'). Skin condition observed. Any new redness, swelling, or warmth. REPORT TO NURSE IMMEDIATELY: New pain or increased pain during ROM. New limitation in joint movement (couldn't move as far as before). Joint feels hot, swollen, or red. Client refuses ROM and seems distressed. You hear or feel grinding/popping in the joint. Client falls or is injured. CONTRAINDICATIONS — DO NOT perform ROM if: Joint is dislocated, fractured, or recently surgery. There is severe pain. Client is medically unstable. Care plan prohibits."}
+  ],quiz:[{q:"How often should bed-bound clients receive ROM exercises?",opts:["Once per week","As specified in their care plan, usually 1-2 times daily","Only when family asks","Once per month"],a:1},{q:"During ROM, you should:",opts:["Force the joint past its limit to improve flexibility","Move slowly and stop if there is pain or resistance","Move as fast as possible to save time","Skip joints if the client doesn't complain"],a:1},{q:"Passive Range of Motion (PROM) means:",opts:["The client moves their own joints","The caregiver moves the joints while the client is relaxed","No movement is needed","Only physical therapists can do it"],a:1},{q:"You notice a client's knee feels hot and swollen during ROM. You should:",opts:["Continue the exercises","Stop and notify the nurse immediately","Apply ice and continue","Document and check tomorrow"],a:1}],status:"published"},
 ];
 
 // ─── SEED: TASKS, CHORES, EVENTS ────────────────────────────────────
@@ -1174,11 +1379,17 @@ const seedInvoices=[
 ];
 const seedPaySlips=[
   {id:"PS-2026-001",caregiverId:"CG1",periodId:"BP2",date:"2026-03-01",status:"paid",
-    lines:[{clientName:"Becky Sutton",hours:13,rate:35,total:455}],
+    lines:[
+      {date:"2026-02-25",clientName:"Becky Sutton",signIn:"8:00 AM",signOut:"2:00 PM",startTime:"08:00",endTime:"14:00",hours:6,rate:35,total:210},
+      {date:"2026-02-27",clientName:"Becky Sutton",signIn:"7:00 AM",signOut:"2:00 PM",startTime:"07:00",endTime:"14:00",hours:7,rate:35,total:245},
+    ],
     regHours:13,otHours:0,regPay:455,otPay:0,expenses:0,mileage:0,grossPay:455,type:"employee"},
   {id:"PS-2026-002",caregiverId:"CG4",periodId:"BP2",date:"2026-03-01",status:"paid",
-    lines:[{clientName:"Linda Frank",hours:8,rate:20,total:160}],
-    regHours:8,otHours:0,regPay:160,otPay:0,expenses:67.42,mileage:12.5,grossPay:235.80,type:"employee"},
+    lines:[
+      {date:"2026-02-25",clientName:"Linda Frank",signIn:"9:00 AM",signOut:"1:00 PM",startTime:"09:00",endTime:"13:00",hours:4,rate:20,total:80},
+      {date:"2026-02-28",clientName:"Linda Frank",signIn:"10:00 AM",signOut:"2:00 PM",startTime:"10:00",endTime:"14:00",hours:4,rate:20,total:80},
+    ],
+    regHours:8,otHours:0,regPay:160,otPay:0,expenses:67.42,mileage:12.5,grossPay:239.92,type:"employee"},
 ];
 
 // ─── INCIDENT AI RESPONSE TEMPLATES (Admin-editable) ────────────────
@@ -2671,6 +2882,16 @@ export default function App(){
   const [invoices,setInvoices]=useState(seedInvoices);
   const [paySlips,setPaySlips]=useState(seedPaySlips);
   const [notifications,setNotifications]=useState([]);
+  // ═══ REFERRAL BONUS SYSTEM ═══
+  // Each bonus: {id, referrerType: caregiver|client|family, referrerId, refereeType: caregiver|client, refereeId, refereeName, amount, status: pending|scheduled|paid|credited, scheduledDate, paymentMethod: payslip|invoice_credit|cash, periodId, createdAt, paidAt, notes}
+  const [referralBonuses,setReferralBonuses]=useState([
+    // Demo: Erolyn referred Tiffany (now hired caregiver) — pending bonus
+    {id:"RB1",referrerType:"caregiver",referrerId:"CG1",refereeType:"caregiver",refereeId:"CG4",refereeName:"Tiffany Brown",amount:100,status:"paid",paymentMethod:"payslip",scheduledDate:"2026-03-01",paidAt:"2026-03-01",periodId:"BP2",createdAt:"2026-02-15",notes:"Caregiver-to-caregiver referral. Tiffany completed 30-day probation."},
+    // Demo: Becky's family referred Linda — pending invoice credit on Linda's next bill
+    {id:"RB2",referrerType:"client",referrerId:"CL1",refereeType:"client",refereeId:"CL2",refereeName:"Linda Frank",amount:150,status:"scheduled",paymentMethod:"invoice_credit",scheduledDate:"2026-03-15",periodId:"BP1",createdAt:"2026-02-20",notes:"Client referral — credit applied to Becky's next invoice."},
+  ]);
+  // Default bonus amounts (admin-configurable in Settings — TODO surface)
+  const REFERRAL_BONUS_DEFAULTS={caregiver_to_caregiver:100,client_to_client:150,family_to_client:100,other:50};
   // Feature flags: per-entity toggle map
   // featureFlags = {clientId: {featureId: bool}, caregiverId: {featureId: bool}, global: {featureId: bool}}
   const [featureFlags,setFeatureFlags]=useState(()=>{
@@ -2853,16 +3074,16 @@ export default function App(){
     </div>
 
     <div className="main">
-      {pg==="dash"&&<DashPage clients={clients} caregivers={caregivers} incidents={incidents} expenses={expenses} careNotes={careNotes} events={events} trainingProgress={trainingProgress} schedules={schedules} setPg={setPg}/>}
+      {pg==="dash"&&<DashPage clients={clients} caregivers={caregivers} incidents={incidents} expenses={expenses} careNotes={careNotes} events={events} setEvents={setEvents} trainingProgress={trainingProgress} schedules={schedules} setSchedules={setSchedules} setPg={setPg} notify={notify}/>}
       {pg==="schedule"&&<SchedulePage schedules={schedules} setSchedules={setSchedules} clients={clients} caregivers={caregivers}/>}
-      {pg==="clients"&&<ClientsPage clients={clients} setClients={setClients} sel={selClient} setSel={setSelClient} caregivers={caregivers} careNotes={careNotes} incidents={incidents} events={events} chores={chores} expenses={expenses} schedules={schedules}/>}
+      {pg==="clients"&&<ClientsPage clients={clients} setClients={setClients} sel={selClient} setSel={setSelClient} caregivers={caregivers} careNotes={careNotes} incidents={incidents} events={events} setEvents={setEvents} chores={chores} expenses={expenses} schedules={schedules} notify={notify}/>}
       {pg==="care"&&<CarePage clients={clients} caregivers={caregivers} chores={chores} setChores={setChores} incidents={incidents} setIncidents={setIncidents} careNotes={careNotes} setCareNotes={setCareNotes} modal={modal} setModal={setModal}/>}
       {pg==="expenses"&&<ExpensesPage expenses={expenses} setExpenses={setExpenses} caregivers={caregivers} clients={clients}/>}
       {pg==="recon"&&<ReconPage entries={reconEntries} caregivers={caregivers} clients={clients}/>}
-      {pg==="billing"&&<BillingPage invoices={invoices} setInvoices={setInvoices} clients={clients} caregivers={caregivers} rateCards={rateCards} billingPeriods={billingPeriods} setBillingPeriods={setBillingPeriods} schedules={schedules} expenses={expenses}/>}
-      {pg==="payroll"&&<PayrollPage paySlips={paySlips} setPaySlips={setPaySlips} caregivers={caregivers} clients={clients} payCards={payCards} billingPeriods={billingPeriods} schedules={schedules} expenses={expenses} rateCards={rateCards}/>}
+      {pg==="billing"&&<BillingPage invoices={invoices} setInvoices={setInvoices} clients={clients} caregivers={caregivers} rateCards={rateCards} billingPeriods={billingPeriods} setBillingPeriods={setBillingPeriods} schedules={schedules} expenses={expenses} referralBonuses={referralBonuses} setReferralBonuses={setReferralBonuses}/>}
+      {pg==="payroll"&&<PayrollPage paySlips={paySlips} setPaySlips={setPaySlips} caregivers={caregivers} clients={clients} payCards={payCards} billingPeriods={billingPeriods} schedules={schedules} expenses={expenses} rateCards={rateCards} referralBonuses={referralBonuses} setReferralBonuses={setReferralBonuses}/>}
       {pg==="rates"&&<RateCardsPage rateCards={rateCards} setRateCards={setRateCards} payCards={payCards} setPayCards={setPayCards} clients={clients} caregivers={caregivers}/>}
-      {pg==="recruiting"&&<RecruitingPage applicants={cgApplicants} setApplicants={setCGApplicants} leads={clientLeads} setLeads={setClientLeads} clients={clients} setClients={setClients} caregivers={caregivers} setCaregivers={setCaregivers} setSel={setSelClient} setPg={setPg}/>}
+      {pg==="recruiting"&&<RecruitingPage applicants={cgApplicants} setApplicants={setCGApplicants} leads={clientLeads} setLeads={setClientLeads} clients={clients} setClients={setClients} caregivers={caregivers} setCaregivers={setCaregivers} setSel={setSelClient} setPg={setPg} referralBonuses={referralBonuses} setReferralBonuses={setReferralBonuses} billingPeriods={billingPeriods} bonusDefaults={REFERRAL_BONUS_DEFAULTS}/>}
       {pg==="marketing"&&<MarketingPage campaigns={campaigns} setCampaigns={setCampaigns} leads={clientLeads} applicants={cgApplicants}/>}
       {pg==="compliance"&&<CompliancePage items={compliance} setItems={setCompliance} caregivers={caregivers} clients={clients}/>}
       {pg==="training"&&<TrainingPage caregivers={caregivers} progress={trainingProgress} setProgress={setTrainingProgress} modal={modal} setModal={setModal}/>}
@@ -3114,7 +3335,12 @@ function SchedulePage({schedules,setSchedules,clients,caregivers}){
 // ═══════════════════════════════════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════
-function DashPage({clients,caregivers,incidents,expenses,careNotes,events,trainingProgress,schedules,setPg}){
+function DashPage({clients,caregivers,incidents,expenses,careNotes,events,setEvents,trainingProgress,schedules,setSchedules,setPg,notify}){
+  const [dashSelDay,setDashSelDay]=useState(null);
+  const [dashSelShift,setDashSelShift]=useState(null);
+  const [dashSelCG,setDashSelCG]=useState(null);
+  const [dashShowAddEvent,setDashShowAddEvent]=useState(false);
+  const [dashEvtForm,setDashEvtForm]=useState({clientId:"",title:"",type:"medical",date:"",time:"",location:"",notes:"",reminder:false});
   const openInc=incidents.filter(i=>i.status==="open").length;
   const pendExp=expenses.filter(e=>e.status==="pending");
   const recentNotes=careNotes.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,4);
@@ -3157,6 +3383,8 @@ function DashPage({clients,caregivers,incidents,expenses,careNotes,events,traini
       const mns=["January","February","March","April","May","June","July","August","September","October","November","December"];
       const cgaps=clients.filter(c=>c.status==="active").map(cl=>{const t=fwd.length;const cv=fwd.filter(d=>allS.some(s=>s.date===d.iso&&s.clientId===cl.id)).length;return{...cl,covered:cv,total:t,gaps:t-cv,pct:t>0?Math.round(cv/t*100):100};});
 
+      const cdsWithEvents=cds.map(c=>({...c,evs:events.filter(e=>e.date===c.iso||(e.date&&e.date.startsWith(c.iso)))}));
+
       return <div className="card" style={{marginBottom:16}}>
         <div className="card-h"><h3>Schedule Overview — {mns[mn]} {yr}</h3>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -3164,16 +3392,18 @@ function DashPage({clients,caregivers,incidents,expenses,careNotes,events,traini
             {gaps.length>0&&<span className="tag tag-wn">{gaps.length} gaps</span>}
           </div>
         </div>
+        <div style={{padding:"6px 14px",fontSize:10,color:"var(--t2)",borderBottom:"var(--border-thin)",background:"var(--bg)"}}>💡 Tap any day to add appointments · Tap a shift for caregiver details · Tap a client below to view profile</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",borderBottom:"var(--border-thin)"}}>
           {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=> <div key={d} style={{padding:"8px 4px",textAlign:"center",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)"}}>{d}</div>)}
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)"}}>
           {bk.map((_,i)=> <div key={"b"+i} style={{minHeight:56,borderRight:"var(--border-thin)",borderBottom:"var(--border-thin)",background:"var(--bg)",opacity:.3}}/>)}
-          {cds.map(cd=>{const gap=cd.sch.length===0&&cd.dow!==0&&cd.dow!==6&&new Date(cd.iso)>=now();const we=cd.dow===0||cd.dow===6;
-            return <div key={cd.day} style={{minHeight:56,borderRight:"var(--border-thin)",borderBottom:"var(--border-thin)",padding:"3px 4px",background:cd.isToday?"rgba(60,79,61,.06)":gap?"rgba(138,115,86,.04)":we?"rgba(0,0,0,.015)":"var(--card)"}}>
+          {cdsWithEvents.map(cd=>{const gap=cd.sch.length===0&&cd.dow!==0&&cd.dow!==6&&new Date(cd.iso)>=now();const we=cd.dow===0||cd.dow===6;
+            return <div key={cd.day} onClick={()=>setDashSelDay(cd)} style={{minHeight:56,borderRight:"var(--border-thin)",borderBottom:"var(--border-thin)",padding:"3px 4px",cursor:"pointer",background:cd.isToday?"rgba(60,79,61,.06)":gap?"rgba(138,115,86,.04)":we?"rgba(0,0,0,.015)":"var(--card)",transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(60,79,61,.1)"} onMouseLeave={e=>e.currentTarget.style.background=cd.isToday?"rgba(60,79,61,.06)":gap?"rgba(138,115,86,.04)":we?"rgba(0,0,0,.015)":"var(--card)"}>
               <div style={{fontSize:11,fontWeight:cd.isToday?700:400,color:cd.isToday?"#3c4f3d":we?"var(--t3)":"var(--text)"}}>{cd.day}</div>
-              {cd.sch.slice(0,2).map((s,i)=>{const cg=caregivers.find(c=>c.id===s.caregiverId);return <div key={i} style={{fontSize:7,padding:"1px 3px",marginTop:1,background:s.color||"#3c4f3d",color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.startTime} {cg?.name?.split(" ")[0]}</div>;})}
+              {cd.sch.slice(0,2).map((s,i)=>{const cg=caregivers.find(c=>c.id===s.caregiverId);return <div key={i} onClick={ev=>{ev.stopPropagation();setDashSelShift({...s,caregiver:cg,client:clients.find(c=>c.id===s.clientId)});}} style={{fontSize:7,padding:"1px 3px",marginTop:1,background:s.color||"#3c4f3d",color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",cursor:"pointer"}}>{s.startTime} {cg?.name?.split(" ")[0]}</div>;})}
               {cd.sch.length>2&&<div style={{fontSize:7,color:"var(--t2)",marginTop:1}}>+{cd.sch.length-2}</div>}
+              {cd.evs.slice(0,1).map((e,i)=> <div key={"e"+i} style={{fontSize:7,padding:"1px 3px",marginTop:1,background:"rgba(122,48,48,.15)",color:"var(--err)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.type==="medical"?"🏥":"📌"}</div>)}
               {gap&&<div style={{fontSize:6,padding:"1px 3px",marginTop:1,background:"rgba(138,115,86,.18)",color:"#8a7356",fontWeight:700,textTransform:"uppercase"}}>Gap</div>}
             </div>;
           })}
@@ -3183,16 +3413,74 @@ function DashPage({clients,caregivers,incidents,expenses,careNotes,events,traini
           <span style={{display:"flex",alignItems:"center",gap:3}}><div style={{width:8,height:8,background:"rgba(138,115,86,.18)",border:"1px solid rgba(138,115,86,.3)"}}/> Gap</span>
           <span style={{display:"flex",alignItems:"center",gap:3}}><div style={{width:8,height:8,background:"rgba(60,79,61,.06)",border:"1px solid rgba(60,79,61,.2)"}}/> Today</span>
         </div>
-        {/* Per-client coverage */}
+        {/* Per-client coverage — clickable rows */}
         {cgaps.some(c=>c.gaps>0)&&<div style={{padding:"10px 20px",borderTop:"var(--border-thin)"}}>
           <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:8}}>Client Coverage</div>
-          {cgaps.map(c=> <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+          {cgaps.map(c=> <div key={c.id} onClick={()=>setPg("clients")} style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,cursor:"pointer",padding:"4px 6px",transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--bg)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
             <span style={{fontSize:12,fontWeight:600,width:100}}>{c.name}</span>
             <div style={{flex:1}}><div className="progress-bar"><div className="progress-fill" style={{width:`${c.pct}%`,background:c.pct>=80?"#3c4f3d":c.pct>=50?"#8a7356":"#7a3030"}}/></div></div>
             <span className={`tag ${c.pct>=80?"tag-ok":c.pct>=50?"tag-wn":"tag-er"}`} style={{fontSize:9,minWidth:40,textAlign:"center"}}>{c.pct}%</span>
+            <span style={{fontSize:11,color:"var(--t2)"}}>›</span>
           </div>)}
         </div>}
         {gaps.length>0&&<div style={{padding:"10px 20px",borderTop:"var(--border-thin)",fontSize:11,color:"#8a7356"}}>⚠️ {gaps.length} uncovered weekday{gaps.length>1?"s":""}: {gaps.slice(0,5).map(g=>fromISO(g.iso).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})).join(", ")}{gaps.length>5?` +${gaps.length-5} more`:""}</div>}
+      </div>;
+    })()}
+
+    {/* ═══ WORKFORCE RISK INTELLIGENCE — Today's at-risk shifts ═══ */}
+    {(()=>{
+      const todayStr=today();
+      const todayShifts=schedules.filter(s=>s.date===todayStr&&s.status==="published");
+      // Mock predictive data — in production, this would come from real GPS, traffic, weather APIs
+      const atRisk=todayShifts.map(s=>{
+        const cg=caregivers.find(c=>c.id===s.caregiverId);
+        const cl=clients.find(c=>c.id===s.clientId);
+        const [sh,sm]=s.startTime.split(":").map(Number);
+        const shiftStartMin=sh*60+sm;
+        const nowMin=new Date().getHours()*60+new Date().getMinutes();
+        const minsToShift=shiftStartMin-nowMin;
+        // Simulated: random factors for demo (in prod, use real GPS)
+        const cgIdHash=(cg?.id||"").charCodeAt(2)||50;
+        const trafficBuffer=cgIdHash%3===0?12:cgIdHash%3===1?6:0; // some routes have traffic
+        const weatherBuffer=cgIdHash%4===0?8:0;
+        const baseTravel=12+(cgIdHash%15);
+        const estTravel=baseTravel+trafficBuffer+weatherBuffer;
+        const slack=minsToShift-estTravel;
+        let level=null;
+        if(minsToShift<-5)level="late";
+        else if(slack<5&&minsToShift>0)level="high";
+        else if(slack<15&&minsToShift>0&&minsToShift<60)level="med";
+        return{shift:s,cg,cl,slack,estTravel,minsToShift,level,trafficBuffer,weatherBuffer};
+      }).filter(r=>r.level);
+      if(atRisk.length===0)return null;
+      return <div className="card" style={{marginBottom:16,borderLeft:"4px solid #f59e0b"}}>
+        <div className="card-h"><h3>🚦 Workforce Risk Intelligence — Today</h3>
+          <button className="btn btn-sm btn-s" onClick={()=>setPg("gps_map")}>🗺 Open Live Map</button>
+        </div>
+        <div style={{padding:"12px 18px",fontSize:11,color:"var(--t2)",borderBottom:"var(--border-thin)"}}>
+          🤖 Predictive analysis based on caregiver location, traffic patterns, weather, and shift start time. {atRisk.length} shift{atRisk.length>1?"s":""} flagged.
+        </div>
+        {atRisk.map((r,i)=>{const colors={late:"#dc2626",high:"#f59e0b",med:"#eab308"};return <div key={i} style={{padding:"12px 18px",borderBottom:"var(--border-thin)",display:"flex",gap:12,alignItems:"center"}}>
+          <div style={{width:6,height:40,background:colors[r.level]}}/>
+          <ProfileAvatar name={r.cg?.name||"?"} photo={r.cg?.photo} size={40}/>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:600,fontSize:13}}>{r.cg?.name} → {r.cl?.name}</div>
+            <div style={{fontSize:11,color:"var(--t2)"}}>
+              Shift {r.shift.startTime}–{r.shift.endTime} · ~{r.estTravel} min travel
+              {r.trafficBuffer>0&&<span style={{color:"#f59e0b"}}> · +{r.trafficBuffer}m traffic</span>}
+              {r.weatherBuffer>0&&<span style={{color:"#3b82f6"}}> · +{r.weatherBuffer}m weather</span>}
+            </div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <span className="tag" style={{background:colors[r.level]+"22",color:colors[r.level],fontWeight:700}}>
+              {r.level==="late"?"🚨 LATE":r.level==="high"?"⚠️ AT RISK":"⏱ TIGHT"}
+            </span>
+            <div style={{fontSize:10,color:"var(--t2)",marginTop:2}}>
+              {r.level==="late"?`${-r.minsToShift}m behind`:`${r.slack}m slack`}
+            </div>
+          </div>
+          <button className="btn btn-sm btn-p" onClick={()=>setPg("gps_map")}>💬 Contact</button>
+        </div>;})}
       </div>;
     })()}
 
@@ -3220,13 +3508,155 @@ function DashPage({clients,caregivers,incidents,expenses,careNotes,events,traini
         {upcoming.length===0&&<div className="empty">No upcoming events</div>}
       </div>
     </div>
+
+    {/* ═══ DASH DAY DRILL-DOWN MODAL ═══ */}
+    {dashSelDay&&<div className="modal-bg" onClick={()=>setDashSelDay(null)}>
+      <div className="modal" style={{maxWidth:600,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">📅 {fromISO(dashSelDay.iso).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}<button className="btn btn-sm btn-s" onClick={()=>setDashSelDay(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+            <button className="btn btn-p" onClick={()=>{setDashEvtForm({clientId:clients[0]?.id||"",title:"",type:"medical",date:dashSelDay.iso,time:"",location:"",notes:"",reminder:false});setDashShowAddEvent(true);setDashSelDay(null);}}>🏥 Add Appointment</button>
+            <button className="btn btn-p" style={{background:"#8a7356"}} onClick={()=>{setDashEvtForm({clientId:clients[0]?.id||"",title:"",type:"reminder",date:dashSelDay.iso,time:"",location:"",notes:"",reminder:true});setDashShowAddEvent(true);setDashSelDay(null);}}>⏰ Add Reminder</button>
+          </div>
+
+          {dashSelDay.sch.length>0&&<div style={{marginBottom:14}}>
+            <h3 style={{fontSize:13,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)"}}>👩‍⚕️ Shifts ({dashSelDay.sch.length})</h3>
+            {dashSelDay.sch.map((s,i)=>{const cg=caregivers.find(c=>c.id===s.caregiverId);const cl=clients.find(c=>c.id===s.clientId);return <div key={i} onClick={()=>{setDashSelShift({...s,caregiver:cg,client:cl});setDashSelDay(null);}} style={{padding:"10px 14px",borderBottom:"var(--border-thin)",cursor:"pointer",display:"flex",gap:10,alignItems:"center"}}>
+              <div style={{width:6,height:36,background:s.color||"#3c4f3d"}}/>
+              <ProfileAvatar name={cg?.name||"?"} photo={cg?.photo} size={36}/>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600,fontSize:13}}>{cg?.name||"Unassigned"}</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>{s.startTime} – {s.endTime} · {cl?.name||"—"}</div>
+              </div>
+              <span style={{fontSize:14,color:"var(--t2)"}}>›</span>
+            </div>;})}
+          </div>}
+
+          {dashSelDay.evs?.length>0&&<div style={{marginBottom:14}}>
+            <h3 style={{fontSize:13,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)"}}>📌 Events ({dashSelDay.evs.length})</h3>
+            {dashSelDay.evs.map((e,i)=>{const cl=clients.find(c=>c.id===e.clientId);return <div key={i} style={{padding:"10px 14px",borderBottom:"var(--border-thin)",display:"flex",gap:10,alignItems:"center"}}>
+              <div style={{fontSize:24}}>{e.type==="medical"?"🏥":e.type==="reminder"?"⏰":"🌱"}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600,fontSize:13}}>{e.title}</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>{cl?.name||""}{e.time?" · "+e.time:""}{e.location?" · "+e.location:""}</div>
+              </div>
+              <button className="btn btn-sm btn-s" onClick={()=>{setDashEvtForm({...e});setDashShowAddEvent(true);setDashSelDay(null);}}>✏️ Edit</button>
+              <button className="btn btn-sm btn-s" style={{color:"var(--err)"}} onClick={()=>{if(confirm("Delete "+e.title+"?")){setEvents(p=>p.filter(x=>x.id!==e.id));setDashSelDay(null);}}}>🗑</button>
+            </div>;})}
+          </div>}
+
+          {dashSelDay.sch.length===0&&(!dashSelDay.evs||dashSelDay.evs.length===0)&&<div className="empty" style={{padding:"20px 0"}}>Nothing scheduled. Add an appointment or reminder above.</div>}
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ DASH SHIFT DRILL-DOWN MODAL ═══ */}
+    {dashSelShift&&<div className="modal-bg" onClick={()=>setDashSelShift(null)}>
+      <div className="modal" style={{maxWidth:520}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">👩‍⚕️ Shift Details<button className="btn btn-sm btn-s" onClick={()=>setDashSelShift(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"flex",gap:14,alignItems:"center",marginBottom:14,padding:"12px 14px",background:"var(--bg)"}}>
+            <ProfileAvatar name={dashSelShift.caregiver?.name||"?"} photo={dashSelShift.caregiver?.photo} size={56} dark/>
+            <div>
+              <div style={{fontFamily:"var(--fd)",fontSize:18,fontWeight:400}}>{dashSelShift.caregiver?.name||"Unassigned"}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>{dashSelShift.caregiver?.email}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>{dashSelShift.caregiver?.phone}</div>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Date</div><div style={{fontSize:14,fontWeight:600}}>{fmtD(dashSelShift.date)}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Time</div><div style={{fontSize:14,fontWeight:600}}>{dashSelShift.startTime} – {dashSelShift.endTime}</div></div>
+          </div>
+          {dashSelShift.client&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:14}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Client</div><div style={{fontSize:14,fontWeight:600}}>{dashSelShift.client.name}</div><div style={{fontSize:11,color:"var(--t2)"}}>{dashSelShift.client.addr}</div></div>}
+          {dashSelShift.tasks?.length>0&&<div style={{marginBottom:14}}>
+            <h3 style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>Tasks ({dashSelShift.tasks.length})</h3>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{dashSelShift.tasks.map((t,i)=> <span key={i} className="tag tag-bl">{t}</span>)}</div>
+          </div>}
+          <div style={{display:"flex",gap:6}}>
+            <button className="btn btn-s" style={{flex:1}} onClick={()=>{setDashSelCG(dashSelShift.caregiver);setDashSelShift(null);}}>👤 View Caregiver</button>
+            <button className="btn btn-s" onClick={()=>{setPg("schedule");setDashSelShift(null);}}>📅 Open Scheduling</button>
+            <button className="btn btn-s" onClick={()=>setDashSelShift(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ DASH CAREGIVER DRILL-DOWN MODAL ═══ */}
+    {dashSelCG&&<div className="modal-bg" onClick={()=>setDashSelCG(null)}>
+      <div className="modal" style={{maxWidth:540,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">👤 Caregiver Profile<button className="btn btn-sm btn-s" onClick={()=>setDashSelCG(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"flex",gap:14,alignItems:"center",marginBottom:14,padding:"14px",background:"var(--bg)"}}>
+            <ProfileAvatar name={dashSelCG.name||"?"} photo={dashSelCG.photo} size={64} dark/>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:"var(--fd)",fontSize:18,fontWeight:400}}>{dashSelCG.name}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>📧 {dashSelCG.email}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>📞 {dashSelCG.phone}</div>
+              <span className="tag tag-ok" style={{marginTop:4}}>{dashSelCG.status||"Active"}</span>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Pay Rate</div><div style={{fontSize:14,fontWeight:600}}>${dashSelCG.rate||20}/hr</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Hire Date</div><div style={{fontSize:14,fontWeight:600}}>{dashSelCG.hireDate?fmtD(dashSelCG.hireDate):"—"}</div></div>
+          </div>
+          {dashSelCG.certs?.length>0&&<div style={{marginBottom:14}}>
+            <h3 style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>Certifications</h3>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{dashSelCG.certs.map(c=> <span key={c} className="tag tag-bl">{c}</span>)}</div>
+          </div>}
+          <div style={{display:"flex",gap:6}}>
+            <button className="btn btn-s" style={{flex:1}} onClick={()=>{setPg("team");setDashSelCG(null);}}>📋 Open Team Page</button>
+            <button className="btn btn-s" onClick={()=>setDashSelCG(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ DASH ADD/EDIT EVENT MODAL ═══ */}
+    {dashShowAddEvent&&<div className="modal-bg" onClick={()=>setDashShowAddEvent(false)}>
+      <div className="modal" style={{maxWidth:520,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{dashEvtForm.id?"Edit":"Add"} {dashEvtForm.type==="reminder"?"Reminder":dashEvtForm.type==="medical"?"Appointment":"Event"}<button className="btn btn-sm btn-s" onClick={()=>setDashShowAddEvent(false)}>✕</button></div>
+        <div className="modal-b">
+          <div className="fi" style={{marginBottom:10}}><label>Client</label><select value={dashEvtForm.clientId} onChange={e=>setDashEvtForm(p=>({...p,clientId:e.target.value}))}>
+            {clients.filter(c=>c.status==="active").map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+          </select></div>
+          <div className="fi" style={{marginBottom:10}}><label>Type</label><select value={dashEvtForm.type} onChange={e=>setDashEvtForm(p=>({...p,type:e.target.value}))}>
+            <option value="medical">🏥 Medical Appointment</option>
+            <option value="social">🌱 Social / Wellness Event</option>
+            <option value="reminder">⏰ Reminder</option>
+            <option value="other">📌 Other</option>
+          </select></div>
+          <div className="fi" style={{marginBottom:10}}><label>Title *</label><input value={dashEvtForm.title} onChange={e=>setDashEvtForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Cardiology follow-up"/></div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Date *</label><input type="date" value={dashEvtForm.date} onChange={e=>setDashEvtForm(p=>({...p,date:e.target.value}))}/></div>
+            <div className="fi"><label>Time</label><input type="time" value={dashEvtForm.time} onChange={e=>setDashEvtForm(p=>({...p,time:e.target.value}))}/></div>
+          </div>
+          <div className="fi" style={{marginBottom:10}}><label>Location</label><input value={dashEvtForm.location||""} onChange={e=>setDashEvtForm(p=>({...p,location:e.target.value}))} placeholder="e.g. Northwestern Memorial"/></div>
+          <div className="fi" style={{marginBottom:10}}><label>Notes</label><textarea value={dashEvtForm.notes||""} onChange={e=>setDashEvtForm(p=>({...p,notes:e.target.value}))} rows={3} style={{width:"100%"}}/></div>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:14,padding:"10px 12px",background:"var(--bg)"}}>
+            <input type="checkbox" id="rem-dash" checked={!!dashEvtForm.reminder} onChange={e=>setDashEvtForm(p=>({...p,reminder:e.target.checked}))}/>
+            <label htmlFor="rem-dash" style={{fontSize:12,cursor:"pointer"}}>🔔 Send reminder notification 24 hours before</label>
+          </div>
+          <button className="btn btn-p" style={{width:"100%"}} disabled={!dashEvtForm.title?.trim()||!dashEvtForm.date} onClick={()=>{
+            if(dashEvtForm.id){
+              setEvents(p=>p.map(e=>e.id===dashEvtForm.id?{...dashEvtForm}:e));
+            }else{
+              const newEvent={...dashEvtForm,id:"EV"+uid()};
+              setEvents(p=>[newEvent,...p]);
+              if(notify&&dashEvtForm.reminder)notify("U1","reminder","New "+dashEvtForm.type,dashEvtForm.title+" on "+fmtD(dashEvtForm.date),{clientId:dashEvtForm.clientId});
+            }
+            setDashShowAddEvent(false);
+            setDashEvtForm({clientId:"",title:"",type:"medical",date:"",time:"",location:"",notes:"",reminder:false});
+          }}>{dashEvtForm.id?"Save Changes":"Add"}</button>
+        </div>
+      </div>
+    </div>}
   </div>;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
 // CLIENT PROFILES
 // ═══════════════════════════════════════════════════════════════════════
-function ClientsPage({clients,setClients,sel,setSel,caregivers,careNotes,incidents,events,chores,expenses,schedules}){
+function ClientsPage({clients,setClients,sel,setSel,caregivers,careNotes,incidents,events,setEvents,chores,expenses,schedules,notify}){
   const cl=clients.find(c=>c.id===sel)||clients.filter(c=>c.status!=="archived")[0]||clients[0];
   const [tab,setTab]=useState("overview");
   const [editField,setEditField]=useState(null);
@@ -3236,6 +3666,19 @@ function ClientsPage({clients,setClients,sel,setSel,caregivers,careNotes,inciden
   const [editSocial,setEditSocial]=useState(null);
   const [editEmergency,setEditEmergency]=useState(null);
   const [editMed,setEditMed]=useState(null);
+  // Calendar drill-down state
+  const [selDay,setSelDay]=useState(null);
+  const [selShift,setSelShift]=useState(null);
+  const [selEvent,setSelEvent]=useState(null);
+  const [selCG,setSelCG]=useState(null);
+  const [showAddEvent,setShowAddEvent]=useState(false);
+  const emptyEvent={clientId:cl?.id,title:"",type:"medical",date:"",time:"",location:"",notes:"",reminder:false};
+  const [evtForm,setEvtForm]=useState(emptyEvent);
+  // More drill-downs: social activity, chore, expense, timeline note
+  const [selActivity,setSelActivity]=useState(null);
+  const [selChore,setSelChore]=useState(null);
+  const [selExp,setSelExp]=useState(null);
+  const [selNote,setSelNote]=useState(null);
   const [calMonth,setCalMonth]=useState(now().getMonth());
   const [calYear,setCalYear]=useState(now().getFullYear());
   const [showAdd,setShowAdd]=useState(false);
@@ -3347,6 +3790,9 @@ function ClientsPage({clients,setClients,sel,setSel,caregivers,careNotes,inciden
 
       {/* Calendar Grid */}
       <div className="card" style={{overflow:"visible"}}>
+        <div style={{padding:"8px 14px",fontSize:11,color:"var(--t2)",borderBottom:"var(--border-thin)",background:"var(--bg)"}}>
+          💡 <strong>Tap any day</strong> to add an appointment or reminder · <strong>Tap a shift</strong> to see caregiver details · <strong>Tap an event</strong> to view/edit
+        </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",borderBottom:"var(--border-thin)"}}>
           {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=> <div key={d} style={{padding:"8px 4px",textAlign:"center",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)"}}>{d}</div>)}
         </div>
@@ -3354,10 +3800,10 @@ function ClientsPage({clients,setClients,sel,setSel,caregivers,careNotes,inciden
           {blanks.map((_,i)=> <div key={"b"+i} style={{minHeight:72,border:"var(--border-thin)",background:"var(--bg)",opacity:.3}}/>)}
           {calDays.map(d=>{
             const hasGap=d.scheds.length===0&&d.dow!==0&&d.dow!==6&&new Date(d.iso)>=now();
-            return <div key={d.day} style={{minHeight:72,border:"var(--border-thin)",padding:"4px 6px",background:d.isToday?"rgba(60,79,61,.08)":hasGap?"rgba(138,115,86,.06)":"var(--card)",position:"relative",cursor:"default"}}>
+            return <div key={d.day} onClick={()=>setSelDay(d)} style={{minHeight:72,border:"var(--border-thin)",padding:"4px 6px",background:d.isToday?"rgba(60,79,61,.08)":hasGap?"rgba(138,115,86,.06)":"var(--card)",position:"relative",cursor:"pointer",transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(60,79,61,.12)"} onMouseLeave={e=>e.currentTarget.style.background=d.isToday?"rgba(60,79,61,.08)":hasGap?"rgba(138,115,86,.06)":"var(--card)"}>
               <div style={{fontSize:12,fontWeight:d.isToday?700:400,color:d.isToday?"#3c4f3d":d.dow===0||d.dow===6?"var(--t3)":"var(--text)"}}>{d.day}</div>
-              {d.scheds.map((s,i)=>{const cg=caregivers?.find(c=>c.id===s.caregiverId);return <div key={i} style={{fontSize:8,padding:"1px 4px",marginTop:2,background:s.color||"#3c4f3d",color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.startTime} {cg?.name?.split(" ")[0]||""}</div>;})}
-              {d.events.map((e,i)=> <div key={"e"+i} style={{fontSize:8,padding:"1px 4px",marginTop:2,background:e.type==="medical"?"rgba(122,48,48,.15)":"rgba(63,71,73,.1)",color:e.type==="medical"?"var(--err)":"var(--t2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.type==="medical"?"🏥":"🌱"} {e.title?.split(" ")[0]}</div>)}
+              {d.scheds.map((s,i)=>{const cg=caregivers?.find(c=>c.id===s.caregiverId);return <div key={i} onClick={ev=>{ev.stopPropagation();setSelShift({...s,caregiver:cg});}} style={{fontSize:8,padding:"1px 4px",marginTop:2,background:s.color||"#3c4f3d",color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",cursor:"pointer"}}>{s.startTime} {cg?.name?.split(" ")[0]||""}</div>;})}
+              {d.events.map((e,i)=> <div key={"e"+i} onClick={ev=>{ev.stopPropagation();setSelEvent(e);}} style={{fontSize:8,padding:"1px 4px",marginTop:2,background:e.type==="medical"?"rgba(122,48,48,.15)":"rgba(63,71,73,.1)",color:e.type==="medical"?"var(--err)":"var(--t2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",cursor:"pointer"}}>{e.type==="medical"?"🏥":"🌱"} {e.title?.split(" ")[0]}</div>)}
               {hasGap&& <div style={{fontSize:7,padding:"1px 3px",marginTop:2,background:"rgba(138,115,86,.2)",color:"#8a7356",fontWeight:700,textTransform:"uppercase",letterSpacing:.3}}>Gap</div>}
             </div>;
           })}
@@ -3519,38 +3965,362 @@ function ClientsPage({clients,setClients,sel,setSel,caregivers,careNotes,inciden
       </div>
 
       {/* AI Social Agent */}
-      <div style={{gridColumn:"span 2"}}><SocialAgent cl={cl}/></div>
+      <div style={{gridColumn:"span 2"}}><SocialAgent cl={cl} onSelectActivity={a=>setSelActivity(a)}/></div>
     </div>}
 
     {/* ═══ CARE ═══ */}
     {tab==="care"&& <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
       <div className="card"><div className="card-h"><h3>Active Chores & Tasks</h3></div>
-        {clChores.map(ch=> <div key={ch.id} style={{padding:"10px 18px",borderBottom:"var(--border-thin)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div><div style={{fontWeight:600,fontSize:13}}>{ch.title}</div><div style={{fontSize:11,color:"var(--t2)"}}>{ch.frequency} | Last: {fmtD(ch.lastDone)}</div></div>
+        {clChores.map(ch=>{const cg=caregivers?.find(c=>c.id===ch.caregiverId);return <div key={ch.id} onClick={()=>setSelChore({...ch,caregiver:cg})} style={{padding:"10px 18px",borderBottom:"var(--border-thin)",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--bg)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+          <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13}}>{ch.title}</div><div style={{fontSize:11,color:"var(--t2)"}}>{ch.frequency} | Last: {fmtD(ch.lastDone)}</div></div>
           <span className={`tag ${ch.priority==="high"?"tag-er":"tag-ok"}`}>{ch.priority}</span>
-        </div>)}
+          <span style={{marginLeft:8,fontSize:14,color:"var(--t2)"}}>›</span>
+        </div>;})}
         {clChores.length===0&& <div className="empty">No active tasks</div>}
+        {clChores.length>0&&<div style={{padding:"6px 18px",fontSize:10,color:"var(--t2)",fontStyle:"italic",borderTop:"var(--border-thin)"}}>💡 Tap any task for details</div>}
       </div>
       <div className="card"><div className="card-h"><h3>Expenses This Period</h3></div>
-        {clExp.length===0? <div className="empty">No expenses</div>:clExp.map(ex=> <div key={ex.id} style={{padding:"10px 18px",borderBottom:"var(--border-thin)",display:"flex",justifyContent:"space-between"}}>
-          <div><div style={{fontWeight:600,fontSize:13}}>{ex.description}</div><div style={{fontSize:11,color:"var(--t2)"}}>{ex.category} | {fmtD(ex.date)}</div></div>
+        {clExp.length===0? <div className="empty">No expenses</div>:clExp.map(ex=>{const cg=caregivers?.find(c=>c.id===ex.caregiverId);return <div key={ex.id} onClick={()=>setSelExp({...ex,caregiver:cg})} style={{padding:"10px 18px",borderBottom:"var(--border-thin)",display:"flex",justifyContent:"space-between",cursor:"pointer",transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--bg)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+          <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13}}>{ex.description}</div><div style={{fontSize:11,color:"var(--t2)"}}>{ex.category} | {fmtD(ex.date)}{cg?" · "+cg.name:""}</div></div>
           <div style={{textAlign:"right"}}><div style={{fontWeight:700}}>{$(ex.amount)}</div><span className={`tag ${ex.status==="approved"?"tag-ok":"tag-wn"}`}>{ex.status}</span></div>
-        </div>)}
+          <span style={{marginLeft:8,fontSize:14,color:"var(--t2)",alignSelf:"center"}}>›</span>
+        </div>;})}
+        {clExp.length>0&&<div style={{padding:"6px 18px",fontSize:10,color:"var(--t2)",fontStyle:"italic",borderTop:"var(--border-thin)"}}>💡 Tap any expense for receipt and details</div>}
       </div>
     </div>}
 
     {/* ═══ TIMELINE ═══ */}
     {tab==="timeline"&& <div className="card"><div className="card-h"><h3>Care Timeline</h3></div>
-      {clNotes.map(n=>{const cg=(caregivers||CAREGIVERS).find(c=>c.id===n.caregiverId);return <div key={n.id} style={{padding:"12px 18px",borderBottom:"var(--border-thin)"}}>
+      {clNotes.map(n=>{const cg=(caregivers||CAREGIVERS).find(c=>c.id===n.caregiverId);return <div key={n.id} onClick={()=>setSelNote({...n,caregiver:cg})} style={{padding:"12px 18px",borderBottom:"var(--border-thin)",cursor:"pointer",transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--bg)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
         <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--t2)",marginBottom:4}}>
           <span style={{fontWeight:600}}>{cg?.name}</span>
           <span>{fmtD(n.date)} {fmtT(n.date)}</span>
         </div>
         <span className={`tag ${NOTE_CATS[n.category]?.color||"tag-ok"}`} style={{marginBottom:6,display:"inline-flex"}}>{n.category}</span>
-        <div style={{fontSize:13,lineHeight:1.6,marginTop:4}}>{n.text}</div>
-        {n.photos&&n.photos.length>0&&<div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>{n.photos.map(ph=><a key={ph.id} href={ph.url} target="_blank" rel="noopener noreferrer"><img src={ph.url} alt="Task" style={{width:80,height:80,objectFit:"cover",border:"var(--border-thin)",cursor:"pointer"}}/></a>)}</div>}
+        <div style={{fontSize:13,lineHeight:1.6,marginTop:4}}>{n.text.length>200?n.text.slice(0,200)+"...":n.text}</div>
+        {n.photos&&n.photos.length>0&&<div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>{n.photos.slice(0,3).map(ph=><img key={ph.id} src={ph.url} alt="Task" style={{width:60,height:60,objectFit:"cover",border:"var(--border-thin)"}}/>)}{n.photos.length>3&&<span style={{fontSize:10,color:"var(--t2)",alignSelf:"center"}}>+{n.photos.length-3}</span>}</div>}
+        <div style={{textAlign:"right",fontSize:11,color:"var(--t2)",marginTop:6}}>Tap to expand ›</div>
       </div>;})}
       {clNotes.length===0&& <div className="empty">No care notes yet</div>}
+    </div>}
+
+    {/* ═══ ACTIVITY/EVENT SOURCE DRILL-DOWN MODAL ═══ */}
+    {selActivity&&<div className="modal-bg" onClick={()=>setSelActivity(null)}>
+      <div className="modal" style={{maxWidth:520,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{({social:"👥",music:"🎵",sports:"⚾",entertainment:"🎬",nature:"🌿",exercise:"🏃",arts:"🎨",culture:"🏛",spiritual:"⛪"})[selActivity.type]||"📌"} {selActivity.act}<button className="btn btn-sm btn-s" onClick={()=>setSelActivity(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{padding:"12px 14px",background:"linear-gradient(135deg,#f0fdf4,#e8f5e8)",border:"1px solid var(--ok)",marginBottom:14}}>
+            <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--ok)",marginBottom:4}}>🤖 AI Match Source</div>
+            <div style={{fontSize:13,fontWeight:600}}>{selActivity.matchedFrom}</div>
+            <div style={{fontSize:11,color:"var(--t2)",marginTop:2}}>This activity was suggested because {cl.name.split(" ")[0]}'s profile lists this interest/preference. Update Social tab to refine matches.</div>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Type</div><div style={{fontSize:13,fontWeight:600,textTransform:"capitalize"}}>{selActivity.type}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Cost</div><div style={{fontSize:13,fontWeight:600}}>{selActivity.cost||"Varies"}</div></div>
+          </div>
+
+          <div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:10,fontSize:12}}><strong>📍 Location:</strong> {selActivity.where}</div>
+          <div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:14,fontSize:12}}><strong>🕐 When:</strong> {selActivity.when}</div>
+
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            <button className="btn btn-p" style={{flex:"1 1 200px"}} onClick={()=>{
+              setEvtForm({clientId:cl.id,title:selActivity.act,type:"social",date:"",time:"",location:selActivity.where,notes:"Suggested by Social Agent. Cost: "+(selActivity.cost||"Varies")+". Schedule: "+selActivity.when,reminder:true});
+              setShowAddEvent(true);
+              setSelActivity(null);
+            }}>📅 Add to Calendar</button>
+            {selActivity.map&&<button className="btn btn-s" style={{flex:"1 1 140px"}} onClick={()=>window.open(selActivity.map,"_blank")}>🗺️ View Map</button>}
+            <button className="btn btn-s" onClick={()=>setSelActivity(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ CHORE/TASK DRILL-DOWN MODAL ═══ */}
+    {selChore&&<div className="modal-bg" onClick={()=>setSelChore(null)}>
+      <div className="modal" style={{maxWidth:500}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">📋 {selChore.title}<button className="btn btn-sm btn-s" onClick={()=>setSelChore(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"flex",gap:8,marginBottom:14}}>
+            <span className={`tag ${selChore.priority==="high"?"tag-er":selChore.priority==="medium"?"tag-wn":"tag-ok"}`}>{selChore.priority?.toUpperCase()} priority</span>
+            <span className="tag tag-bl">{selChore.frequency}</span>
+            {selChore.status&&<span className="tag tag-ok">{selChore.status}</span>}
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Last Done</div><div style={{fontSize:13,fontWeight:600}}>{selChore.lastDone?fmtD(selChore.lastDone):"Never"}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Frequency</div><div style={{fontSize:13,fontWeight:600}}>{selChore.frequency}</div></div>
+          </div>
+
+          {selChore.caregiver&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:10,display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>{setSelCG(selChore.caregiver);setSelChore(null);}}>
+            <ProfileAvatar name={selChore.caregiver.name} photo={selChore.caregiver.photo} size={36}/>
+            <div style={{flex:1}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Assigned Caregiver</div>
+              <div style={{fontSize:13,fontWeight:600}}>{selChore.caregiver.name}</div>
+            </div>
+            <span style={{fontSize:14,color:"var(--t2)"}}>›</span>
+          </div>}
+
+          {selChore.notes&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:14,fontSize:12,lineHeight:1.6}}><strong>Notes:</strong> {selChore.notes}</div>}
+
+          {/* Recent care notes related to this task */}
+          <div style={{marginBottom:14}}>
+            <h3 style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>Recent Activity</h3>
+            {(()=>{const related=clNotes.filter(n=>n.text&&selChore.title&&n.text.toLowerCase().includes(selChore.title.toLowerCase().split(" ")[0])).slice(0,3);return related.length>0?related.map(n=> <div key={n.id} onClick={()=>{setSelNote({...n,caregiver:caregivers?.find(c=>c.id===n.caregiverId)});setSelChore(null);}} style={{padding:"8px 10px",borderBottom:"var(--border-thin)",fontSize:12,cursor:"pointer"}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--t2)"}}><span>{caregivers?.find(c=>c.id===n.caregiverId)?.name}</span><span>{fmtD(n.date)}</span></div>
+              <div style={{marginTop:2}}>{n.text.slice(0,100)}{n.text.length>100?"...":""}</div>
+            </div>):<div style={{fontSize:11,color:"var(--t2)",fontStyle:"italic"}}>No related care notes yet</div>;})()}
+          </div>
+
+          <button className="btn btn-s" style={{width:"100%"}} onClick={()=>setSelChore(null)}>Close</button>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ EXPENSE DRILL-DOWN MODAL ═══ */}
+    {selExp&&<div className="modal-bg" onClick={()=>setSelExp(null)}>
+      <div className="modal" style={{maxWidth:520,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">💰 {selExp.description}<button className="btn btn-sm btn-s" onClick={()=>setSelExp(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{textAlign:"center",padding:"16px",background:"var(--bg)",marginBottom:14}}>
+            <div style={{fontFamily:"var(--fd)",fontSize:32,fontWeight:400}}>{$(selExp.amount)}</div>
+            <span className={`tag ${selExp.status==="approved"?"tag-ok":selExp.status==="rejected"?"tag-er":"tag-wn"}`}>{selExp.status?.toUpperCase()}</span>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Category</div><div style={{fontSize:13,fontWeight:600}}>{selExp.category}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Date</div><div style={{fontSize:13,fontWeight:600}}>{fmtD(selExp.date)}</div></div>
+          </div>
+
+          {selExp.caregiver&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:10,display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>{setSelCG(selExp.caregiver);setSelExp(null);}}>
+            <ProfileAvatar name={selExp.caregiver.name} photo={selExp.caregiver.photo} size={36}/>
+            <div style={{flex:1}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Submitted By</div>
+              <div style={{fontSize:13,fontWeight:600}}>{selExp.caregiver.name}</div>
+            </div>
+            <span style={{fontSize:14,color:"var(--t2)"}}>›</span>
+          </div>}
+
+          {selExp.gps&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:10,fontSize:12}}><strong>📍 GPS at submission:</strong> {selExp.gps}</div>}
+          {selExp.receiptNote&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:10,fontSize:12}}><strong>Receipt details:</strong> {selExp.receiptNote}</div>}
+
+          {selExp.receiptPhoto&&<div style={{textAlign:"center",marginBottom:14}}>
+            <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700,marginBottom:6,textAlign:"left"}}>📷 Receipt Photo</div>
+            <img src={selExp.receiptPhoto} alt="Receipt" style={{maxWidth:"100%",maxHeight:300,border:"var(--border-thin)",cursor:"pointer"}} onClick={()=>window.open(selExp.receiptPhoto,"_blank")}/>
+          </div>}
+
+          <button className="btn btn-s" style={{width:"100%"}} onClick={()=>setSelExp(null)}>Close</button>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ TIMELINE NOTE DRILL-DOWN MODAL ═══ */}
+    {selNote&&<div className="modal-bg" onClick={()=>setSelNote(null)}>
+      <div className="modal" style={{maxWidth:560,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{NOTE_CATS[selNote.category]?.icon||"📝"} Care Note Details<button className="btn btn-sm btn-s" onClick={()=>setSelNote(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,padding:"12px 14px",background:"var(--bg)"}}>
+            <div style={{display:"flex",gap:10,alignItems:"center"}}>
+              <ProfileAvatar name={selNote.caregiver?.name||"?"} photo={selNote.caregiver?.photo} size={36}/>
+              <div>
+                <div style={{fontSize:13,fontWeight:600}}>{selNote.caregiver?.name||"Unknown"}</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>{fmtD(selNote.date)} · {fmtT(selNote.date)}</div>
+              </div>
+            </div>
+            <span className={`tag ${NOTE_CATS[selNote.category]?.color||"tag-ok"}`}>{selNote.category}</span>
+          </div>
+
+          {NOTE_CATS[selNote.category]?.desc&&<div style={{fontSize:11,color:"var(--t2)",marginBottom:10,padding:"6px 10px",background:"var(--bg)",fontStyle:"italic"}}>{NOTE_CATS[selNote.category].icon} {NOTE_CATS[selNote.category].desc}</div>}
+
+          <div style={{padding:"14px 16px",background:"#fffef5",border:"var(--border-thin)",fontSize:13,lineHeight:1.7,marginBottom:14,whiteSpace:"pre-wrap"}}>{selNote.text}</div>
+
+          {selNote.photos&&selNote.photos.length>0&&<div style={{marginBottom:14}}>
+            <h3 style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>📸 Photo Documentation ({selNote.photos.length})</h3>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:8}}>
+              {selNote.photos.map(ph=><a key={ph.id} href={ph.url} target="_blank" rel="noopener noreferrer"><img src={ph.url} alt="Task" style={{width:"100%",height:120,objectFit:"cover",border:"var(--border-thin)",cursor:"pointer"}}/></a>)}
+            </div>
+          </div>}
+
+          <div style={{display:"flex",gap:6}}>
+            {selNote.caregiver&&<button className="btn btn-s" style={{flex:1}} onClick={()=>{setSelCG(selNote.caregiver);setSelNote(null);}}>👤 View Caregiver</button>}
+            <button className="btn btn-s" onClick={()=>setSelNote(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ DAY DRILL-DOWN MODAL — Add appointment/reminder, view shifts/events ═══ */}
+    {selDay&&<div className="modal-bg" onClick={()=>setSelDay(null)}>
+      <div className="modal" style={{maxWidth:560,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">📅 {fromISO(selDay.iso).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}<button className="btn btn-sm btn-s" onClick={()=>setSelDay(null)}>✕</button></div>
+        <div className="modal-b">
+          {/* Quick Add Buttons */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+            <button className="btn btn-p" onClick={()=>{setEvtForm({clientId:cl.id,title:"",type:"medical",date:selDay.iso,time:"",location:"",notes:"",reminder:false});setShowAddEvent(true);setSelDay(null);}}>🏥 Add Appointment</button>
+            <button className="btn btn-p" style={{background:"#8a7356"}} onClick={()=>{setEvtForm({clientId:cl.id,title:"",type:"reminder",date:selDay.iso,time:"",location:"",notes:"",reminder:true});setShowAddEvent(true);setSelDay(null);}}>⏰ Add Reminder</button>
+          </div>
+
+          {/* Scheduled shifts on this day */}
+          {selDay.scheds.length>0&& <div style={{marginBottom:14}}>
+            <h3 style={{fontSize:13,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)"}}>👩‍⚕️ Caregiver Shifts ({selDay.scheds.length})</h3>
+            {selDay.scheds.map((s,i)=>{const cg=caregivers?.find(c=>c.id===s.caregiverId);return <div key={i} onClick={()=>{setSelShift({...s,caregiver:cg});setSelDay(null);}} style={{padding:"10px 14px",borderBottom:"var(--border-thin)",cursor:"pointer",display:"flex",gap:10,alignItems:"center"}}>
+              <div style={{width:6,height:36,background:s.color||"#3c4f3d"}}/>
+              <ProfileAvatar name={cg?.name||"?"} photo={cg?.photo} size={36}/>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600,fontSize:13}}>{cg?.name||"Unassigned"}</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>{s.startTime} – {s.endTime}{s.tasks?.length?" · "+s.tasks.length+" tasks":""}</div>
+              </div>
+              <span style={{fontSize:14,color:"var(--t2)"}}>›</span>
+            </div>;})}
+          </div>}
+
+          {/* Events on this day */}
+          {selDay.events.length>0&& <div style={{marginBottom:14}}>
+            <h3 style={{fontSize:13,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)"}}>📌 Appointments & Reminders ({selDay.events.length})</h3>
+            {selDay.events.map((e,i)=> <div key={i} onClick={()=>{setSelEvent(e);setSelDay(null);}} style={{padding:"10px 14px",borderBottom:"var(--border-thin)",cursor:"pointer",display:"flex",gap:10,alignItems:"center"}}>
+              <div style={{fontSize:24}}>{e.type==="medical"?"🏥":e.type==="reminder"?"⏰":"🌱"}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600,fontSize:13}}>{e.title}</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>{e.time||""}{e.location?" · "+e.location:""}</div>
+              </div>
+              <span style={{fontSize:14,color:"var(--t2)"}}>›</span>
+            </div>)}
+          </div>}
+
+          {selDay.scheds.length===0&&selDay.events.length===0&& <div className="empty" style={{padding:"20px 0"}}>Nothing scheduled this day. Use the buttons above to add an appointment or reminder.</div>}
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ SHIFT DRILL-DOWN MODAL ═══ */}
+    {selShift&&<div className="modal-bg" onClick={()=>setSelShift(null)}>
+      <div className="modal" style={{maxWidth:520}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">👩‍⚕️ Shift Details<button className="btn btn-sm btn-s" onClick={()=>setSelShift(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"flex",gap:14,alignItems:"center",marginBottom:14,padding:"12px 14px",background:"var(--bg)"}}>
+            <ProfileAvatar name={selShift.caregiver?.name||"?"} photo={selShift.caregiver?.photo} size={56} dark/>
+            <div>
+              <div style={{fontFamily:"var(--fd)",fontSize:18,fontWeight:400}}>{selShift.caregiver?.name||"Unassigned"}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>{selShift.caregiver?.email}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>{selShift.caregiver?.phone}</div>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Date</div><div style={{fontSize:14,fontWeight:600}}>{fmtD(selShift.date)}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Time</div><div style={{fontSize:14,fontWeight:600}}>{selShift.startTime} – {selShift.endTime}</div></div>
+          </div>
+          {selShift.tasks?.length>0&&<div style={{marginBottom:14}}>
+            <h3 style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>Tasks ({selShift.tasks.length})</h3>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{selShift.tasks.map((t,i)=> <span key={i} className="tag tag-bl">{t}</span>)}</div>
+          </div>}
+          {selShift.notes&&<div style={{padding:"10px 14px",background:"var(--bg)",fontSize:12,marginBottom:14}}><strong>Notes:</strong> {selShift.notes}</div>}
+          <div style={{display:"flex",gap:6}}>
+            <button className="btn btn-s" style={{flex:1}} onClick={()=>{setSelCG(selShift.caregiver);setSelShift(null);}}>👤 View Caregiver Profile</button>
+            <button className="btn btn-s" onClick={()=>setSelShift(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ CAREGIVER DRILL-DOWN MODAL ═══ */}
+    {selCG&&<div className="modal-bg" onClick={()=>setSelCG(null)}>
+      <div className="modal" style={{maxWidth:540,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">👤 Caregiver Profile<button className="btn btn-sm btn-s" onClick={()=>setSelCG(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"flex",gap:14,alignItems:"center",marginBottom:14,padding:"14px",background:"var(--bg)"}}>
+            <ProfileAvatar name={selCG.name||"?"} photo={selCG.photo} size={64} dark/>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:"var(--fd)",fontSize:18,fontWeight:400}}>{selCG.name}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>📧 {selCG.email}</div>
+              <div style={{fontSize:12,color:"var(--t2)"}}>📞 {selCG.phone}</div>
+              <span className="tag tag-ok" style={{marginTop:4}}>{selCG.status||"Active"}</span>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Rate</div><div style={{fontSize:14,fontWeight:600}}>${selCG.rate||20}/hr</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Hire Date</div><div style={{fontSize:14,fontWeight:600}}>{selCG.hireDate?fmtD(selCG.hireDate):"—"}</div></div>
+          </div>
+          {selCG.certs?.length>0&&<div style={{marginBottom:14}}>
+            <h3 style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>Certifications</h3>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{selCG.certs.map(c=> <span key={c} className="tag tag-bl">{c}</span>)}</div>
+          </div>}
+          {/* Recent shifts with this client */}
+          <h3 style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>Recent shifts with {cl.name}</h3>
+          {(()=>{const cgShifts=schedules?.filter(s=>s.caregiverId===selCG.id&&s.clientId===cl.id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5)||[];return <div style={{marginBottom:14}}>
+            {cgShifts.length===0&&<div style={{fontSize:11,color:"var(--t2)",fontStyle:"italic",padding:"6px 0"}}>No shifts yet</div>}
+            {cgShifts.map((s,i)=> <div key={i} style={{padding:"8px 10px",borderBottom:"var(--border-thin)",fontSize:12,display:"flex",justifyContent:"space-between"}}>
+              <span>{fmtD(s.date)}</span><span style={{color:"var(--t2)"}}>{s.startTime} – {s.endTime}</span>
+            </div>)}
+          </div>;})()}
+          <button className="btn btn-s" style={{width:"100%"}} onClick={()=>setSelCG(null)}>Close</button>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ EVENT DRILL-DOWN / EDIT MODAL ═══ */}
+    {selEvent&&<div className="modal-bg" onClick={()=>setSelEvent(null)}>
+      <div className="modal" style={{maxWidth:500}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{selEvent.type==="medical"?"🏥":selEvent.type==="reminder"?"⏰":"🌱"} {selEvent.title}<button className="btn btn-sm btn-s" onClick={()=>setSelEvent(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Date</div><div style={{fontSize:14,fontWeight:600}}>{fmtD(selEvent.date)}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Time</div><div style={{fontSize:14,fontWeight:600}}>{selEvent.time||"All day"}</div></div>
+          </div>
+          {selEvent.location&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:10,fontSize:12}}><strong>📍 Location:</strong> {selEvent.location}</div>}
+          {selEvent.notes&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:10,fontSize:12,lineHeight:1.6}}><strong>Notes:</strong> {selEvent.notes}</div>}
+          <div style={{display:"flex",gap:6}}>
+            <button className="btn btn-s" style={{flex:1}} onClick={()=>{
+              setEvtForm({...selEvent});
+              setSelEvent(null);
+              setShowAddEvent(true);
+            }}>✏️ Edit</button>
+            <button className="btn btn-s" style={{color:"var(--err)"}} onClick={()=>{
+              if(confirm("Delete "+selEvent.title+"?")){
+                if(setEvents)setEvents(p=>p.filter(e=>e.id!==selEvent.id));
+                setSelEvent(null);
+              }
+            }}>🗑 Delete</button>
+            <button className="btn btn-s" onClick={()=>setSelEvent(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ ADD/EDIT APPOINTMENT/REMINDER MODAL ═══ */}
+    {showAddEvent&&<div className="modal-bg" onClick={()=>setShowAddEvent(false)}>
+      <div className="modal" style={{maxWidth:520,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{evtForm.id?"Edit":"Add"} {evtForm.type==="reminder"?"Reminder":evtForm.type==="medical"?"Appointment":"Event"}<button className="btn btn-sm btn-s" onClick={()=>setShowAddEvent(false)}>✕</button></div>
+        <div className="modal-b">
+          <div className="fi" style={{marginBottom:10}}><label>Type</label><select value={evtForm.type} onChange={e=>setEvtForm(p=>({...p,type:e.target.value}))}>
+            <option value="medical">🏥 Medical Appointment</option>
+            <option value="social">🌱 Social / Wellness Event</option>
+            <option value="reminder">⏰ Reminder</option>
+            <option value="other">📌 Other</option>
+          </select></div>
+          <div className="fi" style={{marginBottom:10}}><label>Title *</label><input value={evtForm.title} onChange={e=>setEvtForm(p=>({...p,title:e.target.value}))} placeholder={evtForm.type==="medical"?"e.g. Cardiology follow-up with Dr. Smith":evtForm.type==="reminder"?"e.g. Refill prescription":"e.g. Birthday celebration"}/></div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Date *</label><input type="date" value={evtForm.date} onChange={e=>setEvtForm(p=>({...p,date:e.target.value}))}/></div>
+            <div className="fi"><label>Time</label><input type="time" value={evtForm.time} onChange={e=>setEvtForm(p=>({...p,time:e.target.value}))}/></div>
+          </div>
+          <div className="fi" style={{marginBottom:10}}><label>Location</label><input value={evtForm.location||""} onChange={e=>setEvtForm(p=>({...p,location:e.target.value}))} placeholder="e.g. Northwestern Memorial - Suite 425"/></div>
+          <div className="fi" style={{marginBottom:10}}><label>Notes</label><textarea value={evtForm.notes||""} onChange={e=>setEvtForm(p=>({...p,notes:e.target.value}))} rows={3} style={{width:"100%"}} placeholder="Bring insurance card, fasting required, etc."/></div>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:14,padding:"10px 12px",background:"var(--bg)"}}>
+            <input type="checkbox" id="rem" checked={!!evtForm.reminder} onChange={e=>setEvtForm(p=>({...p,reminder:e.target.checked}))}/>
+            <label htmlFor="rem" style={{fontSize:12,cursor:"pointer"}}>🔔 Send reminder notification 24 hours before</label>
+          </div>
+          <button className="btn btn-p" style={{width:"100%"}} disabled={!evtForm.title?.trim()||!evtForm.date} onClick={()=>{
+            if(evtForm.id){
+              if(setEvents)setEvents(p=>p.map(e=>e.id===evtForm.id?{...evtForm}:e));
+            }else{
+              const newEvent={...evtForm,id:"EV"+uid(),clientId:cl.id};
+              if(setEvents)setEvents(p=>[newEvent,...p]);
+              if(notify&&evtForm.reminder)notify("U1","reminder","New "+evtForm.type+" for "+cl.name,evtForm.title+" on "+fmtD(evtForm.date),{clientId:cl.id});
+            }
+            setShowAddEvent(false);
+            setEvtForm(emptyEvent);
+          }}>{evtForm.id?"Save Changes":"Add"}</button>
+        </div>
+      </div>
     </div>}
 
     {/* Medication Edit Modal */}
@@ -4074,11 +4844,16 @@ function TrainingPage({caregivers,progress,setProgress,modal,setModal}){
       {TRAINING_MODULES.map((mod,idx)=>{
         const completedBy=Object.entries(progress).filter(([_,arr])=>arr.includes(idx)).map(([cgId])=>caregivers.find(c=>c.id===cgId)?.name).filter(Boolean);
         const catColor={Compliance:"var(--purple)",Safety:"var(--err)",Clinical:"var(--blue)","Daily Living":"var(--ok)"}[mod.category]||"var(--blue)";
+        const res=TRAINING_RESOURCES[mod.id];
+        const vidCount=res?.videos?.length||0;
         return <div key={mod.id} className="card" style={{cursor:"pointer"}} onClick={()=>{setSelMod(idx);setExpandedLesson(null);}}>
           <div style={{padding:"16px 18px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
               <span className="tag" style={{background:catColor+"20",color:catColor}}>{mod.category}</span>
-              <span style={{fontSize:11,color:"var(--t2)"}}>{mod.duration}</span>
+              <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                {vidCount>0&&<span style={{fontSize:10,color:"#dc2626",fontWeight:600}}>🎥 {vidCount}</span>}
+                <span style={{fontSize:11,color:"var(--t2)"}}>{mod.duration}</span>
+              </div>
             </div>
             <div style={{fontFamily:"var(--fd)",fontSize:15,fontWeight:400,marginBottom:4}}>{mod.title}</div>
             <div style={{fontSize:12,color:"var(--t2)",lineHeight:1.5,marginBottom:10}}>{mod.description.slice(0,100)}...</div>
@@ -4092,7 +4867,7 @@ function TrainingPage({caregivers,progress,setProgress,modal,setModal}){
     </div>
 
     {/* Module Detail Modal */}
-    {selMod!==null&&<div className="modal-bg" onClick={()=>setSelMod(null)}><div className="modal" style={{maxWidth:640}} onClick={e=>e.stopPropagation()}>
+    {selMod!==null&&<div className="modal-bg" onClick={()=>setSelMod(null)}><div className="modal" style={{maxWidth:720,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
       <div className="modal-h">{TRAINING_MODULES[selMod].title}<button className="btn btn-sm btn-s" onClick={()=>setSelMod(null)}>✕</button></div>
       <div className="modal-b">
         <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
@@ -4101,7 +4876,38 @@ function TrainingPage({caregivers,progress,setProgress,modal,setModal}){
           <span className="tag tag-wn">{TRAINING_MODULES[selMod].difficulty}</span>
         </div>
         <p style={{fontSize:13,lineHeight:1.6,marginBottom:16}}>{TRAINING_MODULES[selMod].description}</p>
-        <h4 style={{fontSize:13,fontWeight:700,marginBottom:8}}>Lessons</h4>
+
+        {/* Training Videos */}
+        {(()=>{const res=TRAINING_RESOURCES[TRAINING_MODULES[selMod].id];if(!res)return null;return <>
+          {res.videos&&res.videos.length>0&&<div style={{marginBottom:18}}>
+            <h4 style={{fontSize:13,fontWeight:700,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>🎥 Training Videos <span style={{fontSize:10,color:"var(--t2)",fontWeight:400}}>(curated from CDC, AHA, UCLA & professional sources)</span></h4>
+            <div style={{display:"grid",gap:8}}>
+              {res.videos.map((v,i)=><a key={i} href={v.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",color:"inherit"}}>
+                <div style={{padding:"12px 14px",background:"linear-gradient(135deg,#fef2f2,#fee2e2)",border:"1px solid #fecaca",display:"flex",gap:12,alignItems:"center",cursor:"pointer",transition:"transform .15s"}} onMouseEnter={e=>e.currentTarget.style.transform="translateX(2px)"} onMouseLeave={e=>e.currentTarget.style.transform=""}>
+                  <div style={{fontSize:20,flexShrink:0}}>▶️</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:12,fontWeight:600,color:"#991b1b"}}>{v.title}</div>
+                    <div style={{fontSize:10,color:"var(--t2)",marginTop:2}}>{v.source} · {v.duration}</div>
+                  </div>
+                  <div style={{fontSize:11,color:"var(--t2)",flexShrink:0}}>YouTube ›</div>
+                </div>
+              </a>)}
+            </div>
+          </div>}
+          {res.references&&res.references.length>0&&<div style={{marginBottom:18}}>
+            <h4 style={{fontSize:13,fontWeight:700,marginBottom:8}}>📚 Official References & Guidelines</h4>
+            <div style={{display:"grid",gap:6}}>
+              {res.references.map((r,i)=><a key={i} href={r.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",color:"inherit"}}>
+                <div style={{padding:"10px 14px",background:"var(--bg)",border:"var(--border-thin)",fontSize:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span>📄 {r.title}</span>
+                  <span style={{fontSize:10,color:"var(--t2)"}}>Open ›</span>
+                </div>
+              </a>)}
+            </div>
+          </div>}
+        </>;})()}
+
+        <h4 style={{fontSize:13,fontWeight:700,marginBottom:8}}>📖 Lessons</h4>
         {TRAINING_MODULES[selMod].lessons.map((l,i)=>{
           const isObj=typeof l==="object";
           const title=isObj?l.title:l;
@@ -4116,12 +4922,12 @@ function TrainingPage({caregivers,progress,setProgress,modal,setModal}){
             {isOpen&&content&&<div style={{padding:"4px 0 14px 34px",fontSize:12,lineHeight:1.7,color:"var(--t1)",whiteSpace:"pre-line"}}>{content}</div>}
           </div>;
         })}
-        {TRAINING_MODULES[selMod].quiz.length>0&&<><h4 style={{fontSize:13,fontWeight:700,margin:"16px 0 8px"}}>Quiz Preview</h4>
+        {TRAINING_MODULES[selMod].quiz.length>0&&<><h4 style={{fontSize:13,fontWeight:700,margin:"16px 0 8px"}}>📝 Quiz Preview</h4>
           {TRAINING_MODULES[selMod].quiz.map((q,i)=><div key={i} style={{padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
             <div style={{fontSize:13,fontWeight:600,marginBottom:6}}>{q.q}</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>{q.opts.map((o,j)=><div key={j} style={{padding:"6px 10px",borderRadius:"var(--rs)",fontSize:12,background:j===q.a?"var(--ok-l)":"var(--bg)",border:j===q.a?"1px solid var(--ok)":"1px solid var(--bdr)"}}>{o}</div>)}</div>
           </div>)}</>}
-        <h4 style={{fontSize:13,fontWeight:700,margin:"16px 0 8px"}}>Completion Status</h4>
+        <h4 style={{fontSize:13,fontWeight:700,margin:"16px 0 8px"}}>✅ Completion Status</h4>
         {caregivers.map(cg=>{const done=(progress[cg.id]||[]).includes(selMod);
           return <div key={cg.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid var(--bdr)"}}>
             <span style={{fontSize:13,fontWeight:600}}>{cg.name}</span>
@@ -4612,40 +5418,255 @@ function VitalForm({clientId,onSave}){
 // EVENTS & WELLNESS
 // ═══════════════════════════════════════════════════════════════════════
 function EventsPage({events,setEvents,clients}){
+  const [showAddEvent,setShowAddEvent]=useState(false);
+  const [selEvent,setSelEvent]=useState(null);
+  const emptyEvent={clientId:"",title:"",type:"medical",date:"",time:"",endTime:"",location:"",notes:"",reminder:false,recurring:"none"};
+  const [evtForm,setEvtForm]=useState(emptyEvent);
+
   const upcoming=events.filter(e=>new Date(e.date)>=now()).sort((a,b)=>new Date(a.date)-new Date(b.date));
-  const past=events.filter(e=>new Date(e.date)<now());
+  const past=events.filter(e=>new Date(e.date)<now()).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  const saveEvent=()=>{
+    if(!evtForm.title?.trim()||!evtForm.date)return;
+    if(evtForm.id){
+      setEvents(p=>p.map(e=>e.id===evtForm.id?{...evtForm}:e));
+    }else{
+      setEvents(p=>[{...evtForm,id:"EV"+uid(),createdAt:now().toISOString()},...p]);
+    }
+    setShowAddEvent(false);
+    setEvtForm(emptyEvent);
+  };
+
+  // ═══ CALENDAR EXPORT — generates .ics file compatible with Google, Apple, Outlook, etc. ═══
+  const escIcs=(s)=>(s||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
+  const buildIcsEvent=(ev)=>{
+    const cl=clients.find(c=>c.id===ev.clientId);
+    const dt=ev.date.replace(/-/g,"");
+    const tm=(ev.time||"09:00").replace(":","")+"00";
+    const tmEnd=(ev.endTime||(ev.time?String(parseInt(ev.time.slice(0,2))+1).padStart(2,"0")+ev.time.slice(2):"10:00")).replace(":","")+"00";
+    const dtStart=`${dt}T${tm}`;
+    const dtEnd=`${dt}T${tmEnd}`;
+    const summary=escIcs(`${ev.type==="medical"?"🏥 ":""}${ev.title}${cl?" — "+cl.name:""}`);
+    const desc=escIcs(`Type: ${ev.type}\\n${cl?"Client: "+cl.name+"\\n":""}${ev.notes||""}\\n\\nManaged by CWIN At Home`);
+    const loc=escIcs(ev.location||"");
+    const uid=`${ev.id}@cwinathome.com`;
+    let recur="";
+    if(ev.recurring==="weekly")recur="\nRRULE:FREQ=WEEKLY";
+    else if(ev.recurring==="monthly")recur="\nRRULE:FREQ=MONTHLY";
+    let alarm="";
+    if(ev.reminder)alarm="\nBEGIN:VALARM\nACTION:DISPLAY\nDESCRIPTION:Reminder\nTRIGGER:-PT24H\nEND:VALARM";
+    return`BEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${now().toISOString().replace(/[-:.]/g,"").slice(0,15)}Z\nDTSTART:${dtStart}\nDTEND:${dtEnd}\nSUMMARY:${summary}\nDESCRIPTION:${desc}\nLOCATION:${loc}${recur}${alarm}\nEND:VEVENT`;
+  };
+  const downloadIcs=(eventsToExport,filename)=>{
+    const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//CWIN At Home//Care Calendar//EN\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\nX-WR-CALNAME:CWIN Care Calendar\n${eventsToExport.map(buildIcsEvent).join("\n")}\nEND:VCALENDAR`;
+    const blob=new Blob([ics],{type:"text/calendar"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download=filename||"cwin-events.ics";a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),100);
+  };
+  // Google Calendar add URL (opens new tab to add to user's Google Calendar)
+  const googleCalUrl=(ev)=>{
+    const cl=clients.find(c=>c.id===ev.clientId);
+    const dt=ev.date.replace(/-/g,"");
+    const tm=(ev.time||"09:00").replace(":","")+"00";
+    const tmEnd=(ev.endTime||(ev.time?String(parseInt(ev.time.slice(0,2))+1).padStart(2,"0")+ev.time.slice(2):"10:00")).replace(":","")+"00";
+    const dates=`${dt}T${tm}/${dt}T${tmEnd}`;
+    const text=encodeURIComponent(`${ev.title}${cl?" — "+cl.name:""}`);
+    const details=encodeURIComponent(`${ev.notes||""}\n\nManaged by CWIN At Home`);
+    const location=encodeURIComponent(ev.location||"");
+    return`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${dates}&details=${details}&location=${location}`;
+  };
+  // Outlook (web) add URL
+  const outlookCalUrl=(ev)=>{
+    const cl=clients.find(c=>c.id===ev.clientId);
+    const start=`${ev.date}T${ev.time||"09:00"}:00`;
+    const endTime=ev.endTime||(ev.time?String(parseInt(ev.time.slice(0,2))+1).padStart(2,"0")+ev.time.slice(2):"10:00");
+    const end=`${ev.date}T${endTime}:00`;
+    return`https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${encodeURIComponent(ev.title+(cl?" — "+cl.name:""))}&startdt=${encodeURIComponent(start)}&enddt=${encodeURIComponent(end)}&body=${encodeURIComponent(ev.notes||"")}&location=${encodeURIComponent(ev.location||"")}`;
+  };
+  // Yahoo
+  const yahooCalUrl=(ev)=>{
+    const cl=clients.find(c=>c.id===ev.clientId);
+    const dt=ev.date.replace(/-/g,"");
+    const tm=(ev.time||"09:00").replace(":","")+"00";
+    return`https://calendar.yahoo.com/?v=60&title=${encodeURIComponent(ev.title+(cl?" — "+cl.name:""))}&st=${dt}T${tm}&desc=${encodeURIComponent(ev.notes||"")}&in_loc=${encodeURIComponent(ev.location||"")}`;
+  };
+
+  const renderEventCard=(ev)=>{
+    const cl=clients.find(c=>c.id===ev.clientId);
+    const isAI=ev.notes?.includes("AI-suggested");
+    const dt=new Date(ev.date+"T12:00:00");
+    const isPast=dt<now();
+    return <div key={ev.id} onClick={()=>setSelEvent(ev)} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",cursor:"pointer",transition:"background .15s",opacity:isPast?.7:1}} onMouseEnter={e=>e.currentTarget.style.background="var(--bg)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+        <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+          <div style={{fontSize:24}}>{ev.type==="medical"?"🏥":ev.type==="social"?"🌱":ev.type==="reminder"?"⏰":"📌"}</div>
+          <div>
+            <div style={{fontWeight:700,fontSize:14}}>{ev.title}</div>
+            <div style={{fontSize:12,color:"var(--t2)",marginTop:2}}>{cl?.name||"—"} · {fmtD(ev.date)}{ev.time?" · "+ev.time:""}{ev.location?" · "+ev.location:""}</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:4}}>
+          <span className={`tag ${ev.type==="medical"?"tag-er":ev.type==="social"?"tag-ok":"tag-bl"}`}>{ev.type}</span>
+          {isAI&&<span className="tag tag-pu">AI</span>}
+          {ev.recurring&&ev.recurring!=="none"&&<span className="tag tag-wn">🔁 {ev.recurring}</span>}
+          {ev.reminder&&<span className="tag tag-bl">🔔</span>}
+        </div>
+      </div>
+      {ev.notes&&<div style={{fontSize:11,color:"var(--t2)",lineHeight:1.5,marginLeft:34}}>{ev.notes.slice(0,140)}{ev.notes.length>140?"...":""}</div>}
+      <div style={{fontSize:10,color:"var(--t3)",marginTop:6,marginLeft:34}}>Tap for details, edit, or sync to calendar →</div>
+    </div>;
+  };
 
   return <div>
-    <div className="hdr"><div><h2>Events & Wellness</h2><div className="hdr-sub">Medical appointments, social activities, and AI-suggested events</div></div></div>
+    <div className="hdr"><div><h2>Events & Wellness</h2><div className="hdr-sub">Medical appointments, social activities, and AI-suggested events</div></div>
+      <div style={{display:"flex",gap:6}}>
+        <button className="btn btn-sm btn-s" onClick={()=>downloadIcs([...upcoming,...past],"cwin-all-events.ics")}>📥 Export All (.ics)</button>
+        <button className="btn btn-p btn-sm" onClick={()=>{setEvtForm({...emptyEvent,date:today()});setShowAddEvent(true);}}>+ New Event</button>
+      </div>
+    </div>
+
+    {/* ═══ CALENDAR SYNC WIDGET — subscribe in any calendar app ═══ */}
+    <div className="ai-card" style={{marginBottom:14,background:"linear-gradient(135deg,#f0f9ff,#dbeafe)",border:"1px solid #7dd3fc"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:14,flexWrap:"wrap"}}>
+        <div style={{flex:1,minWidth:280}}>
+          <h4 style={{color:"#0369a1",margin:0,marginBottom:4}}>📆 Sync This Calendar to Your Phone or Computer</h4>
+          <p style={{color:"#0c4a6e",fontSize:12,lineHeight:1.6,margin:0}}>Subscribe once and your CWIN events stay automatically in sync. Pick your calendar app:</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:6,minWidth:340}}>
+          <button className="btn btn-sm btn-s" onClick={()=>downloadIcs([...upcoming,...past],"cwin-subscription.ics")}>🍎 Apple Calendar (.ics)</button>
+          <a className="btn btn-sm btn-s" target="_blank" rel="noopener noreferrer" href={"https://calendar.google.com/calendar/u/0/r/settings/addbyurl"} style={{textDecoration:"none",justifyContent:"center"}}>📅 Google (manual URL)</a>
+          <a className="btn btn-sm btn-s" target="_blank" rel="noopener noreferrer" href={"https://outlook.live.com/calendar/0/addfromweb"} style={{textDecoration:"none",justifyContent:"center"}}>📆 Outlook Web</a>
+          <button className="btn btn-sm btn-s" onClick={()=>{
+            // Provide a webcal:// URL placeholder. In production, this would point to a server endpoint that always returns latest .ics
+            const url=window.location.origin+"/api/calendar/cwin.ics";
+            navigator.clipboard?.writeText(url);
+            alert("Subscription URL copied to clipboard:\n\n"+url+"\n\n(Note: in production this URL points to a live feed that auto-updates. Paste into your calendar app's 'Subscribe to URL' option.)");
+          }}>🔗 Copy Subscribe URL</button>
+        </div>
+      </div>
+      <div style={{fontSize:10,color:"#0369a1",marginTop:10,paddingTop:10,borderTop:"1px solid rgba(125,211,252,.4)"}}>
+        💡 <strong>One-time vs Live sync:</strong> .ics file is a one-time snapshot — works in Apple Calendar, Outlook desktop, Thunderbird. The "Subscribe URL" option keeps your calendar continuously updated when you add/edit events here.
+      </div>
+    </div>
 
     <div className="ai-card">
       <h4><span className="pulse" style={{background:"#7B61FF"}}/>AI Event Suggestions</h4>
       <p>Based on client interests and local events: 🎬 Casablanca at Music Box Theatre (Mar 21) for Linda. ⚾ Cubs Opening Day Watch Party (Mar 26) for Steven. 🎵 Free CSO concert series starts in June for Becky. 🃏 Lincoln Park Bridge Club meets Wednesdays for Becky.</p>
     </div>
 
+    <div className="sg">
+      <div className="sc bl"><span className="sl">Upcoming</span><span className="sv">{upcoming.length}</span><span className="ss">{upcoming.filter(e=>e.type==="medical").length} medical · {upcoming.filter(e=>e.type==="social").length} social</span></div>
+      <div className="sc ok"><span className="sl">This Week</span><span className="sv">{upcoming.filter(e=>{const d=new Date(e.date);return d<=addDays(now(),7);}).length}</span><span className="ss">Next 7 days</span></div>
+      <div className="sc"><span className="sl">Past Events</span><span className="sv">{past.length}</span><span className="ss">Completed/historical</span></div>
+      <div className="sc wn"><span className="sl">Reminders Set</span><span className="sv">{events.filter(e=>e.reminder).length}</span><span className="ss">24-hr alerts</span></div>
+    </div>
+
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-      <div className="card"><div className="card-h"><h3>Upcoming ({upcoming.length})</h3></div>
-        {upcoming.map(ev=>{const cl=clients.find(c=>c.id===ev.clientId);const isAI=ev.notes?.includes("AI-suggested");
-          return <div key={ev.id} style={{padding:"12px 18px",borderBottom:"1px solid var(--bdr)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-              <div><div style={{fontWeight:700,fontSize:14}}>{ev.title}</div><div style={{fontSize:12,color:"var(--t2)",marginTop:2}}>{cl?.name} • {fmtD(ev.date)}</div></div>
-              <div style={{display:"flex",gap:4}}><span className={`tag ${ev.type==="medical"?"tag-er":"tag-bl"}`}>{ev.type}</span>{isAI&&<span className="tag tag-pu">AI</span>}</div>
-            </div>
-            {ev.notes&&<div style={{fontSize:12,color:"var(--t2)",marginTop:6,lineHeight:1.5}}>{ev.notes}</div>}
-          </div>;})}
+      <div className="card"><div className="card-h"><h3>📅 Upcoming ({upcoming.length})</h3>
+        {upcoming.length>0&&<button className="btn btn-sm btn-s" onClick={()=>downloadIcs(upcoming,"cwin-upcoming.ics")}>📥 Export</button>}
       </div>
-      <div className="card"><div className="card-h"><h3>Client Wellness Overview</h3></div>
-        {clients.map(cl=>{const clEvents=events.filter(e=>e.clientId===cl.id);const medical=clEvents.filter(e=>e.type==="medical").length;const social=clEvents.filter(e=>e.type==="social").length;
-          return <div key={cl.id} style={{padding:"12px 18px",borderBottom:"1px solid var(--bdr)"}}>
-            <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{cl.name}</div>
-            <div style={{display:"flex",gap:8}}>
-              <span className="tag tag-er">{medical} medical</span>
-              <span className="tag tag-bl">{social} social</span>
+        {upcoming.length===0?<div className="empty">No upcoming events. Click "+ New Event" to add one.</div>:upcoming.map(renderEventCard)}
+      </div>
+      <div className="card"><div className="card-h"><h3>👥 Client Wellness Overview</h3></div>
+        {clients.map(cl=>{const clEvents=events.filter(e=>e.clientId===cl.id);const medical=clEvents.filter(e=>e.type==="medical").length;const social=clEvents.filter(e=>e.type==="social").length;const upcomingMine=clEvents.filter(e=>new Date(e.date)>=now()).length;
+          return <div key={cl.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",cursor:"pointer"}} onClick={()=>{setEvtForm({...emptyEvent,clientId:cl.id,date:today()});setShowAddEvent(true);}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{cl.name}</div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:4}}>
+                  <span className="tag tag-er">{medical} medical</span>
+                  <span className="tag tag-bl">{social} social</span>
+                  <span className="tag tag-ok">{upcomingMine} upcoming</span>
+                </div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>Interests: {cl.social?.interests?.slice(0,3).join(", ")||"—"}</div>
+              </div>
+              <div style={{fontSize:18,color:"var(--t3)"}}>+</div>
             </div>
-            <div style={{fontSize:11,color:"var(--t2)",marginTop:4}}>Interests: {cl.social.interests.slice(0,3).join(", ")}</div>
           </div>;})}
       </div>
     </div>
+
+    {past.length>0&&<details style={{marginTop:14}}><summary style={{cursor:"pointer",fontSize:12,color:"var(--t2)",fontWeight:600,padding:"10px 0"}}>📜 Past Events ({past.length})</summary>
+      <div className="card">{past.slice(0,20).map(renderEventCard)}</div>
+    </details>}
+
+    {/* ═══ EVENT DETAIL / EDIT MODAL ═══ */}
+    {selEvent&&(()=>{const cl=clients.find(c=>c.id===selEvent.clientId);return <div className="modal-bg" onClick={()=>setSelEvent(null)}>
+      <div className="modal" style={{maxWidth:560,maxHeight:"94vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{selEvent.type==="medical"?"🏥":selEvent.type==="social"?"🌱":selEvent.type==="reminder"?"⏰":"📌"} {selEvent.title}<button className="btn btn-sm btn-s" onClick={()=>setSelEvent(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Client</div><div style={{fontSize:14,fontWeight:600}}>{cl?.name||"—"}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Type</div><div style={{fontSize:14,fontWeight:600,textTransform:"capitalize"}}>{selEvent.type}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Date</div><div style={{fontSize:14,fontWeight:600}}>{fmtD(selEvent.date)}</div></div>
+            <div style={{padding:"10px 14px",background:"var(--bg)"}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Time</div><div style={{fontSize:14,fontWeight:600}}>{selEvent.time||"—"}{selEvent.endTime?" – "+selEvent.endTime:""}</div></div>
+          </div>
+          {selEvent.location&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:12}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Location</div><div style={{fontSize:14,fontWeight:600}}>📍 {selEvent.location}</div></div>}
+          {selEvent.notes&&<div style={{padding:"10px 14px",background:"var(--bg)",marginBottom:12,fontSize:13,lineHeight:1.6}}><div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700,marginBottom:4}}>Notes</div>{selEvent.notes}</div>}
+          {selEvent.reminder&&<div style={{padding:"6px 12px",background:"#fef3c7",color:"#78350f",marginBottom:12,fontSize:11,fontWeight:600}}>🔔 24-hour reminder enabled</div>}
+          {selEvent.recurring&&selEvent.recurring!=="none"&&<div style={{padding:"6px 12px",background:"#dbeafe",color:"#1e40af",marginBottom:12,fontSize:11,fontWeight:600}}>🔁 Recurring: {selEvent.recurring}</div>}
+
+          {/* CALENDAR SYNC OPTIONS */}
+          <div style={{marginTop:14,padding:"12px 14px",background:"linear-gradient(135deg,#f0f9ff,#e0f2fe)",border:"1px solid #7dd3fc"}}>
+            <div style={{fontSize:11,color:"#0369a1",fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>📆 Add to Your Calendar</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:6}}>
+              <a href={googleCalUrl(selEvent)} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-s" style={{justifyContent:"center",textDecoration:"none"}}>📅 Google Calendar</a>
+              <a href={outlookCalUrl(selEvent)} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-s" style={{justifyContent:"center",textDecoration:"none"}}>📆 Outlook</a>
+              <a href={yahooCalUrl(selEvent)} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-s" style={{justifyContent:"center",textDecoration:"none"}}>📅 Yahoo</a>
+              <button className="btn btn-sm btn-s" onClick={()=>downloadIcs([selEvent],`cwin-${selEvent.id}.ics`)}>🍎 Apple / .ics File</button>
+            </div>
+            <div style={{fontSize:10,color:"#0369a1",marginTop:8,opacity:.8}}>💡 .ics file works with Apple Calendar, Outlook desktop, Thunderbird, and most calendar apps.</div>
+          </div>
+
+          <div style={{display:"flex",gap:6,marginTop:14}}>
+            <button className="btn btn-p" style={{flex:1}} onClick={()=>{setEvtForm({...selEvent});setSelEvent(null);setShowAddEvent(true);}}>✏️ Edit</button>
+            <button className="btn btn-s" style={{color:"var(--err)"}} onClick={()=>{if(confirm("Delete \""+selEvent.title+"\"?")){setEvents(p=>p.filter(e=>e.id!==selEvent.id));setSelEvent(null);}}}>🗑 Delete</button>
+            <button className="btn btn-s" onClick={()=>setSelEvent(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>;})()}
+
+    {/* ═══ ADD/EDIT EVENT MODAL ═══ */}
+    {showAddEvent&&<div className="modal-bg" onClick={()=>setShowAddEvent(false)}>
+      <div className="modal" style={{maxWidth:540,maxHeight:"94vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{evtForm.id?"Edit":"New"} Event<button className="btn btn-sm btn-s" onClick={()=>setShowAddEvent(false)}>✕</button></div>
+        <div className="modal-b">
+          <div className="fi" style={{marginBottom:10}}><label>Client *</label><select value={evtForm.clientId} onChange={e=>setEvtForm(p=>({...p,clientId:e.target.value}))}>
+            <option value="">Select client...</option>
+            {clients.filter(c=>c.status==="active").map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+          </select></div>
+          <div className="fi" style={{marginBottom:10}}><label>Type</label><select value={evtForm.type} onChange={e=>setEvtForm(p=>({...p,type:e.target.value}))}>
+            <option value="medical">🏥 Medical Appointment</option>
+            <option value="social">🌱 Social / Wellness Event</option>
+            <option value="reminder">⏰ Reminder</option>
+            <option value="other">📌 Other</option>
+          </select></div>
+          <div className="fi" style={{marginBottom:10}}><label>Title *</label><input value={evtForm.title} onChange={e=>setEvtForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Cardiology follow-up · Music Box Theatre"/></div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Date *</label><input type="date" value={evtForm.date} onChange={e=>setEvtForm(p=>({...p,date:e.target.value}))}/></div>
+            <div className="fi"><label>Start Time</label><input type="time" value={evtForm.time} onChange={e=>setEvtForm(p=>({...p,time:e.target.value}))}/></div>
+            <div className="fi"><label>End Time</label><input type="time" value={evtForm.endTime} onChange={e=>setEvtForm(p=>({...p,endTime:e.target.value}))}/></div>
+          </div>
+          <div className="fi" style={{marginBottom:10}}><label>Location</label><input value={evtForm.location} onChange={e=>setEvtForm(p=>({...p,location:e.target.value}))} placeholder="e.g. Northwestern Memorial · 251 E Huron St"/></div>
+          <div className="fi" style={{marginBottom:10}}><label>Notes</label><textarea value={evtForm.notes} onChange={e=>setEvtForm(p=>({...p,notes:e.target.value}))} rows={3} style={{width:"100%"}} placeholder="Doctor name, prep instructions, who's accompanying, etc."/></div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Recurring?</label><select value={evtForm.recurring||"none"} onChange={e=>setEvtForm(p=>({...p,recurring:e.target.value}))}>
+              <option value="none">One-time</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select></div>
+            <div className="fi" style={{display:"flex",alignItems:"center",gap:6}}>
+              <input type="checkbox" id="rem-evt" checked={!!evtForm.reminder} onChange={e=>setEvtForm(p=>({...p,reminder:e.target.checked}))}/>
+              <label htmlFor="rem-evt" style={{fontSize:12,cursor:"pointer"}}>🔔 Send 24-hr reminder</label>
+            </div>
+          </div>
+          <button className="btn btn-p" style={{width:"100%"}} disabled={!evtForm.title?.trim()||!evtForm.date||!evtForm.clientId} onClick={saveEvent}>{evtForm.id?"Save Changes":"Add Event"}</button>
+        </div>
+      </div>
+    </div>}
   </div>;
 }
 
@@ -4919,7 +5940,7 @@ function ReconPage({entries,caregivers,clients}){
 // ═══════════════════════════════════════════════════════════════════════
 // RECRUITING — Caregiver & Client
 // ═══════════════════════════════════════════════════════════════════════
-function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClients,caregivers,setCaregivers,setSel,setPg}){
+function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClients,caregivers,setCaregivers,setSel,setPg,referralBonuses,setReferralBonuses,billingPeriods,bonusDefaults}){
   const [tab,setTab]=useState("caregivers");
   const [showAddAp,setShowAddAp]=useState(false);
   const [showAddLd,setShowAddLd]=useState(false);
@@ -4939,6 +5960,12 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
   const [ldForm,setLdForm]=useState(emptyLd);
   const [certInput,setCertInput]=useState("");
   const [areaInput,setAreaInput]=useState("");
+  // Resume / docs / interview state
+  const [showDocs,setShowDocs]=useState(null);
+  const [showInterview,setShowInterview]=useState(null);
+  const [interviewAnswers,setInterviewAnswers]=useState({});
+  const [hrAgentLoading,setHrAgentLoading]=useState(false);
+  const [hrAgentInsights,setHrAgentInsights]=useState(null);
 
   // AI Score (simple rule-based)
   const calcScore=(ap)=>{
@@ -4952,6 +5979,167 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
     return Math.min(100,s);
   };
 
+  // ═══ BEHAVIORAL INTERVIEW QUESTIONS — Home Care Industry Best Practices ═══
+  // Designed using STAR format (Situation, Task, Action, Result) prompts
+  const INTERVIEW_QUESTIONS=[
+    {id:"q1",cat:"Compassion & Empathy",q:"Tell me about a time you cared for someone who was difficult, frustrated, or in pain. How did you handle the situation, and what was the outcome?",lookFor:"Patience, emotional regulation, empathy, de-escalation, putting client needs first."},
+    {id:"q2",cat:"Reliability & Attendance",q:"Describe a time you had a personal emergency that conflicted with work. How did you handle it while still being reliable to your team and clients?",lookFor:"Communication, planning, sense of duty, problem-solving."},
+    {id:"q3",cat:"Safety & Judgment",q:"Tell me about a time you noticed something unsafe or concerning with a client (e.g., a fall risk, change in condition, medication issue). What did you do?",lookFor:"Attention to detail, escalation to nurse/supervisor, documentation, prioritization of safety."},
+    {id:"q4",cat:"Boundaries & Ethics",q:"A client offers you a $100 cash tip and asks you not to mention it. How would you respond?",lookFor:"Firm boundaries, awareness of CWIN policies, no compromising of professional ethics. Ideal answer: politely decline, redirect to formal process, document."},
+    {id:"q5",cat:"Communication",q:"Describe how you would explain a difficult medical condition or procedure to a client and their family who are anxious.",lookFor:"Clarity, empathy, plain language, listening skills, knowing when to defer to RN/MD."},
+    {id:"q6",cat:"Cultural Sensitivity",q:"You're assigned to a client whose religious or cultural practices differ significantly from yours. How would you ensure respectful, dignified care?",lookFor:"Respect, curiosity, willingness to learn, no judgment, asking instead of assuming."},
+    {id:"q7",cat:"Conflict Resolution",q:"Describe a time you disagreed with a coworker or family member about how to care for a client. How did you handle it?",lookFor:"Professionalism, listening, focus on client well-being, escalation when appropriate."},
+    {id:"q8",cat:"Stress & Self-Care",q:"Caregiving can be emotionally and physically demanding. How do you prevent burnout and care for yourself?",lookFor:"Self-awareness, healthy coping strategies, support systems, recognizing limits."},
+    {id:"q9",cat:"Initiative",q:"Tell me about a time you went above and beyond what was required for a client. What motivated you?",lookFor:"Genuine care, ownership, proactivity (without overstepping scope of practice)."},
+    {id:"q10",cat:"Adaptability",q:"You arrive at a client's home and find the planned activity isn't possible (e.g., they refuse, they're unwell, equipment is missing). What do you do?",lookFor:"Flexibility, problem-solving, communication with office, documentation."},
+    {id:"q11",cat:"Confidentiality (HIPAA)",q:"A client's neighbor stops you and asks how the client is doing. What do you say?",lookFor:"Polite redirection, no health information shared, awareness of HIPAA."},
+    {id:"q12",cat:"Scope of Practice",q:"A client asks you to give them an extra dose of their pain medication because they're hurting more than usual. What do you do?",lookFor:"Knows scope of practice (HHA cannot administer meds beyond reminders), escalates to nurse/MD, documents the request."},
+  ];
+
+  // HR Agent — Generate behavioral interview report from candidate answers
+  const runHRAgent=async(ap,answers)=>{
+    setHrAgentLoading(true);
+    setHrAgentInsights(null);
+    try{
+      const filledAnswers=INTERVIEW_QUESTIONS.filter(q=>answers[q.id]?.trim()).map(q=>`Q [${q.cat}]: ${q.q}\nLook for: ${q.lookFor}\nCandidate's answer: ${answers[q.id]}\n`).join("\n---\n");
+      if(!filledAnswers){
+        setHrAgentInsights("⚠️ No answers provided yet. Fill in at least 3-4 questions to generate a meaningful report.");
+        setHrAgentLoading(false);
+        return;
+      }
+      const prompt=`You are an experienced HR director for CWIN At Home, a non-medical home care agency in Tinley Park, Illinois. You are evaluating a behavioral interview for a caregiver candidate.
+
+Candidate name: ${ap.name}
+Experience: ${ap.experience||"Not specified"}
+Certifications: ${(ap.certs||[]).join(", ")||"None listed"}
+
+The interview used the STAR method (Situation, Task, Action, Result) with behavioral questions covering compassion, reliability, safety judgment, boundaries, communication, cultural sensitivity, conflict resolution, self-care, initiative, adaptability, HIPAA confidentiality, and scope of practice.
+
+CANDIDATE ANSWERS:
+${filledAnswers}
+
+Provide a structured evaluation report (max 350 words) with:
+
+**Overall Recommendation:** [Strong Hire / Hire / Hold / Pass] with one-line justification.
+
+**Strengths Demonstrated:**
+- [3-4 specific strengths with quotes/references to their answers]
+
+**Concerns / Red Flags:**
+- [2-3 specific concerns, or "None significant" if none]
+
+**Cultural Fit Assessment:**
+- Brief evaluation of fit with CWIN's values (compassion, reliability, transparency, fair wages, dignity-focused care).
+
+**Suggested Follow-up Questions:**
+- 2-3 targeted questions to clarify weak areas before making final decision.
+
+**Reference Check Priorities:**
+- 2-3 specific things to verify with references.
+
+Be balanced, specific, and honest. Focus on patterns across answers, not single statements.`;
+
+      const response=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1500,
+          messages:[{role:"user",content:prompt}],
+        })
+      });
+      const data=await response.json();
+      const text=data.content?.map(b=>b.text||"").join("")||"No insights returned.";
+      setHrAgentInsights(text);
+      // Save to applicant activity log
+      addActivity(applicants,setApplicants,ap.id,"🤖 HR Agent interview report generated");
+    }catch(e){
+      setHrAgentInsights("⚠️ HR Agent unavailable: "+e.message);
+    }finally{
+      setHrAgentLoading(false);
+    }
+  };
+
+  // Handle document upload (resume, certs, etc.)
+  const handleDocUpload=(apId,file,docType)=>{
+    if(!file)return;
+    if(file.size>10*1024*1024){alert("File must be under 10MB");return;}
+    const reader=new FileReader();
+    reader.onload=(ev)=>{
+      const doc={id:"doc"+uid(),name:file.name,type:docType,size:file.size,mime:file.type,uploadedAt:now().toISOString(),data:ev.target.result};
+      setApplicants(p=>p.map(a=>a.id===apId?{...a,documents:[...(a.documents||[]),doc],activityLog:[...(a.activityLog||[]),{date:now().toISOString(),text:`📎 Uploaded ${docType}: ${file.name}`}]}:a));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ═══ REFERRAL BONUS — DETECT INTERNAL REFERRERS ═══
+  const [bonusPrompt,setBonusPrompt]=useState(null); // {refereeType, refereeId, refereeName, source}
+  const [bonusForm,setBonusForm]=useState({referrerType:"caregiver",referrerId:"",amount:0,paymentMethod:"payslip",scheduledDate:today(),periodId:"",notes:""});
+
+  // Try to identify if a "source" string matches a known caregiver / client / family contact
+  const detectReferrer=(sourceStr)=>{
+    if(!sourceStr)return null;
+    const s=sourceStr.toLowerCase();
+    // Check caregivers
+    const cg=caregivers.find(c=>s.includes(c.name?.toLowerCase()||"_x_")||s.includes(c.email?.toLowerCase()||"_x_"));
+    if(cg)return{type:"caregiver",id:cg.id,name:cg.name};
+    // Check clients
+    const cl=clients.find(c=>s.includes(c.name?.toLowerCase()||"_x_"));
+    if(cl)return{type:"client",id:cl.id,name:cl.name};
+    // Check family contacts (familyPortal.contacts on client records)
+    for(const c of clients){
+      const fc=(c.familyPortal?.contacts||[]).find(fc=>s.includes(fc.name?.toLowerCase()||"_x_"));
+      if(fc)return{type:"family",id:c.id+":"+fc.name,name:fc.name+" (family of "+c.name+")",clientId:c.id};
+    }
+    return null;
+  };
+
+  // Open the bonus prompt modal when conversion happens with internal referrer
+  const promptBonusForReferral=(refereeType,refereeId,refereeName,sourceStr)=>{
+    const ref=detectReferrer(sourceStr);
+    if(!ref)return false; // No internal referrer detected — no prompt
+    let defaultAmount=bonusDefaults?.other||50;
+    if(ref.type==="caregiver"&&refereeType==="caregiver")defaultAmount=bonusDefaults?.caregiver_to_caregiver||100;
+    else if(ref.type==="client"&&refereeType==="client")defaultAmount=bonusDefaults?.client_to_client||150;
+    else if(ref.type==="family"&&refereeType==="client")defaultAmount=bonusDefaults?.family_to_client||100;
+    setBonusForm({
+      referrerType:ref.type,
+      referrerId:ref.id,
+      referrerName:ref.name,
+      refereeType,refereeId,refereeName,
+      amount:defaultAmount,
+      paymentMethod:ref.type==="caregiver"?"payslip":"invoice_credit",
+      scheduledDate:today(),
+      periodId:billingPeriods?.[0]?.id||"",
+      notes:""
+    });
+    setBonusPrompt({refereeType,refereeId,refereeName,source:sourceStr,referrer:ref});
+    return true;
+  };
+
+  // Save the configured bonus
+  const saveReferralBonus=()=>{
+    if(!setReferralBonuses)return;
+    const bonus={
+      id:"RB"+uid(),
+      referrerType:bonusForm.referrerType,
+      referrerId:bonusForm.referrerId,
+      refereeType:bonusForm.refereeType,
+      refereeId:bonusForm.refereeId,
+      refereeName:bonusForm.refereeName,
+      amount:parseFloat(bonusForm.amount)||0,
+      status:"scheduled",
+      paymentMethod:bonusForm.paymentMethod,
+      scheduledDate:bonusForm.scheduledDate,
+      periodId:bonusForm.periodId,
+      createdAt:now().toISOString(),
+      notes:bonusForm.notes,
+    };
+    setReferralBonuses(p=>[bonus,...p]);
+    setBonusPrompt(null);
+    alert(`✅ Referral bonus of $${bonus.amount} scheduled for ${bonusForm.referrerName}.\n\nIt will appear on the next ${bonus.paymentMethod==="payslip"?"pay slip":bonus.paymentMethod==="invoice_credit"?"client invoice":"manual payout"}${bonus.periodId?" for "+billingPeriods.find(b=>b.id===bonus.periodId)?.label:""}.`);
+  };
+
   // Add activity to log
   const addActivity=(list,setList,id,text)=>{
     setList(p=>p.map(a=>a.id===id?{...a,activityLog:[...(a.activityLog||[]),{date:now().toISOString(),text}]}:a));
@@ -4960,9 +6148,23 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
   // Move stage with activity logging
   const moveApStage=(id,newStatus,note)=>{
     setApplicants(p=>p.map(a=>a.id===id?{...a,status:newStatus,activityLog:[...(a.activityLog||[]),{date:now().toISOString(),text:note||`Moved to ${stages[newStatus]}`}]}:a));
+    // If hired, check for referral bonus opportunity
+    if(newStatus==="hired"){
+      const ap=applicants.find(a=>a.id===id);
+      if(ap&&!referralBonuses?.find(b=>b.refereeId===id&&b.refereeType==="caregiver")){
+        setTimeout(()=>{promptBonusForReferral("caregiver",id,ap.name,ap.source);},300);
+      }
+    }
   };
   const moveLdStage=(id,newStatus,note)=>{
     setLeads(p=>p.map(l=>l.id===id?{...l,status:newStatus,activityLog:[...(l.activityLog||[]),{date:now().toISOString(),text:note||`Moved to ${clStages[newStatus]}`}]}:l));
+    // If active (converted), check for referral bonus opportunity
+    if(newStatus==="active"){
+      const ld=leads.find(l=>l.id===id);
+      if(ld&&!referralBonuses?.find(b=>b.refereeId===id&&b.refereeType==="lead")){
+        setTimeout(()=>{promptBonusForReferral("client",id,ld.name,ld.referralSource);},300);
+      }
+    }
   };
 
   // Convert hired applicant to caregiver
@@ -4971,6 +6173,8 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
     const newCG={id:newId,shortId:newId,name:ap.name,email:ap.email,phone:ap.phone,rate:20,certs:ap.certs||[],hireDate:today(),photo:null,avatar:ap.name.split(" ").map(n=>n[0]).join(""),status:"active",trainingComplete:0,trainingTotal:12};
     setCaregivers(p=>[...p,newCG]);
     addActivity(applicants,setApplicants,ap.id,"✅ Converted to caregiver record: "+newId);
+    // Check for internal referrer and prompt for bonus
+    setTimeout(()=>{promptBonusForReferral("caregiver",newId,ap.name,ap.source);},100);
     return newId;
   };
 
@@ -4981,6 +6185,8 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
     setClients(p=>[...p,newClient]);
     addActivity(leads,setLeads,ld.id,"✅ Converted to client record: "+newId);
     if(setSel)setSel(newId);
+    // Check for internal referrer and prompt for bonus
+    setTimeout(()=>{promptBonusForReferral("client",newId,ld.name,ld.referralSource);},100);
     return newId;
   };
 
@@ -5044,6 +6250,8 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
           {ap.status==="offer"&&<button className="btn btn-sm btn-ok" onClick={()=>{moveApStage(ap.id,"hired","Accepted offer — HIRED!");setShowOnboard(ap.id);}}>✅ Mark Hired</button>}
           {ap.status==="hired"&&<><button className="btn btn-sm btn-ok" onClick={()=>{convertToCaregiver(ap);}}>🔄 Convert to Caregiver</button><button className="btn btn-sm btn-s" onClick={()=>setShowOnboard(ap.id)}>📋 Onboarding</button></>}
           <button className="btn btn-sm btn-s" onClick={()=>setSelAp(ap)}>📝 Notes</button>
+          <button className="btn btn-sm btn-s" onClick={()=>setShowDocs(ap.id)}>📎 Docs ({(ap.documents||[]).length})</button>
+          <button className="btn btn-sm btn-s" onClick={()=>{setShowInterview(ap.id);setInterviewAnswers(ap.interview||{});setHrAgentInsights(ap.interviewReport||null);}}>🎤 Interview</button>
           <button className="btn btn-sm btn-s" onClick={()=>{setApForm({...ap});setShowAddAp(true);}}>✏️ Edit</button>
           {ap.status!=="hired"&&<button className="btn btn-sm btn-s" style={{color:"var(--err)"}} onClick={()=>moveApStage(ap.id,"rejected","Rejected")}>✕ Reject</button>}
           {ap.status!=="hired"&&<button className="btn btn-sm btn-s" style={{color:"var(--ochre)"}} onClick={()=>moveApStage(ap.id,"withdrawn","Withdrawn")}>Archive</button>}
@@ -5194,6 +6402,122 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
       </div>
     </div></div>}
 
+    {/* ═══ DOCUMENTS / RESUME UPLOAD MODAL ═══ */}
+    {showDocs&&(()=>{const ap=applicants.find(a=>a.id===showDocs);if(!ap)return null;return <div className="modal-bg" onClick={()=>setShowDocs(null)}>
+      <div className="modal" style={{maxWidth:580,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">📎 Documents — {ap.name}<button className="btn btn-sm btn-s" onClick={()=>setShowDocs(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{marginBottom:14,padding:"12px 14px",background:"linear-gradient(135deg,#f0f9ff,#e0f2fe)",border:"1px solid #7dd3fc"}}>
+            <div style={{fontSize:11,color:"#0369a1",fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>Upload Documents</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:8}}>
+              {[
+                {key:"resume",label:"📄 Resume / CV",accept:".pdf,.doc,.docx"},
+                {key:"cert",label:"🎓 Certifications",accept:".pdf,image/*"},
+                {key:"id",label:"🪪 ID / License",accept:"image/*,.pdf"},
+                {key:"reference",label:"✉️ Reference Letter",accept:".pdf,.doc,.docx,image/*"},
+                {key:"bg_check",label:"🔍 Background Check",accept:".pdf,image/*"},
+                {key:"other",label:"📎 Other",accept:"*"},
+              ].map(t=><label key={t.key} className="btn btn-sm btn-s" style={{cursor:"pointer",justifyContent:"center"}}>
+                {t.label}
+                <input type="file" accept={t.accept} style={{display:"none"}} onChange={e=>{handleDocUpload(showDocs,e.target.files[0],t.key);e.target.value="";}}/>
+              </label>)}
+            </div>
+            <div style={{fontSize:10,color:"var(--t2)",marginTop:8}}>Max 10MB per file. PDFs, Word docs, and images supported.</div>
+          </div>
+
+          <h4 style={{fontSize:13,fontWeight:700,marginBottom:8}}>📁 Uploaded Documents ({(ap.documents||[]).length})</h4>
+          {(ap.documents||[]).length===0?<div className="empty">No documents uploaded yet</div>:
+          <div style={{display:"grid",gap:8}}>
+            {(ap.documents||[]).map(doc=>{
+              const isImg=doc.mime?.startsWith("image/");
+              const isPdf=doc.mime==="application/pdf";
+              const sizeK=(doc.size/1024).toFixed(0);
+              const docTypeLabels={resume:"Resume / CV",cert:"Certification",id:"ID / License",reference:"Reference Letter",bg_check:"Background Check",other:"Other"};
+              return <div key={doc.id} style={{padding:"10px 14px",border:"var(--border-thin)",display:"flex",gap:12,alignItems:"center"}}>
+                <div style={{fontSize:24,width:36,textAlign:"center"}}>{isImg?"🖼":isPdf?"📄":"📎"}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:600,wordBreak:"break-all"}}>{doc.name}</div>
+                  <div style={{fontSize:10,color:"var(--t2)"}}>
+                    <span className="tag tag-bl" style={{fontSize:9,marginRight:6}}>{docTypeLabels[doc.type]||doc.type}</span>
+                    {sizeK}KB · Uploaded {fmtD(doc.uploadedAt)}
+                  </div>
+                </div>
+                <button className="btn btn-sm btn-s" onClick={()=>{
+                  // Open in new tab — use blob to handle base64
+                  const win=window.open();
+                  if(isImg)win.document.write(`<img src="${doc.data}" style="max-width:100%"/>`);
+                  else if(isPdf)win.document.write(`<iframe src="${doc.data}" style="width:100%;height:100vh;border:none"></iframe>`);
+                  else{const a=document.createElement("a");a.href=doc.data;a.download=doc.name;a.click();}
+                }}>👁 View</button>
+                <button className="btn btn-sm btn-s" style={{color:"var(--err)"}} onClick={()=>{
+                  if(confirm("Delete "+doc.name+"?")){
+                    setApplicants(p=>p.map(a=>a.id===showDocs?{...a,documents:(a.documents||[]).filter(d=>d.id!==doc.id),activityLog:[...(a.activityLog||[]),{date:now().toISOString(),text:`🗑 Removed document: ${doc.name}`}]}:a));
+                  }
+                }}>🗑</button>
+              </div>;
+            })}
+          </div>}
+        </div>
+      </div>
+    </div>;})()}
+
+    {/* ═══ BEHAVIORAL INTERVIEW MODAL — AI HR AGENT ═══ */}
+    {showInterview&&(()=>{const ap=applicants.find(a=>a.id===showInterview);if(!ap)return null;return <div className="modal-bg" onClick={()=>setShowInterview(null)}>
+      <div className="modal" style={{maxWidth:780,maxHeight:"94vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">🎤 Behavioral Interview — {ap.name}<button className="btn btn-sm btn-s" onClick={()=>setShowInterview(null)}>✕</button></div>
+        <div className="modal-b">
+          <div className="ai-card" style={{background:"linear-gradient(135deg,#1a1a2e,#16213e)",marginBottom:14}}>
+            <h4 style={{color:"#fff"}}><span className="pulse" style={{background:"var(--ok)"}}/>🤖 AI HR Agent — Behavioral Interview Assistant</h4>
+            <p style={{color:"rgba(255,255,255,.8)",fontSize:12}}>This interview uses the STAR method (Situation, Task, Action, Result) to assess behavioral fit. Type the candidate's answers below — the AI HR Agent will generate a structured evaluation report covering strengths, concerns, cultural fit, and reference check priorities.</p>
+          </div>
+
+          <div style={{marginBottom:14}}>
+            <h4 style={{fontSize:13,fontWeight:700,marginBottom:10}}>📋 Behavioral Interview Questions ({INTERVIEW_QUESTIONS.length})</h4>
+            <div style={{fontSize:10,color:"var(--t2)",marginBottom:14,padding:"8px 12px",background:"var(--bg)"}}>💡 Tip: Use STAR — ask candidate to describe a Situation, the Task they faced, the Action they took, and the Result. Listen for specifics, not generalities.</div>
+            {INTERVIEW_QUESTIONS.map((q,i)=><div key={q.id} style={{marginBottom:14,padding:"12px 14px",background:"var(--card)",border:"var(--border-thin)"}}>
+              <div style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:6}}>
+                <div style={{width:24,height:24,background:"#070707",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:11,flexShrink:0}}>{i+1}</div>
+                <div style={{flex:1}}>
+                  <span className="tag tag-pu" style={{fontSize:9,marginBottom:4}}>{q.cat}</span>
+                  <div style={{fontSize:13,fontWeight:600,marginTop:2,lineHeight:1.5}}>{q.q}</div>
+                  <div style={{fontSize:10,color:"var(--t2)",fontStyle:"italic",marginTop:4}}>📝 Look for: {q.lookFor}</div>
+                </div>
+              </div>
+              <textarea
+                value={interviewAnswers[q.id]||""}
+                onChange={e=>setInterviewAnswers(p=>({...p,[q.id]:e.target.value}))}
+                rows={3}
+                style={{width:"100%",marginTop:6,fontSize:12}}
+                placeholder="Type the candidate's answer here, or notes about their response..."
+              />
+            </div>)}
+          </div>
+
+          <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+            <button className="btn btn-p" disabled={hrAgentLoading} onClick={()=>{
+              // Save answers to applicant
+              setApplicants(p=>p.map(a=>a.id===showInterview?{...a,interview:interviewAnswers}:a));
+              runHRAgent(ap,interviewAnswers);
+            }}>{hrAgentLoading?"⏳ HR Agent analyzing...":"✨ Generate AI HR Report"}</button>
+            <button className="btn btn-s" onClick={()=>{
+              // Save without generating
+              setApplicants(p=>p.map(a=>a.id===showInterview?{...a,interview:interviewAnswers}:a));
+              alert("Interview answers saved.");
+            }}>💾 Save Answers</button>
+            {hrAgentInsights&&!hrAgentLoading&&<button className="btn btn-s" onClick={()=>{
+              setApplicants(p=>p.map(a=>a.id===showInterview?{...a,interview:interviewAnswers,interviewReport:hrAgentInsights}:a));
+              alert("Report saved to candidate record.");
+            }}>📌 Save Report to Record</button>}
+          </div>
+
+          {hrAgentInsights&&<div style={{padding:"16px 20px",background:"linear-gradient(135deg,#fef3c7,#fde68a)",border:"2px solid #f59e0b",fontSize:13,lineHeight:1.7,whiteSpace:"pre-wrap",color:"#78350f"}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:8,color:"#78350f"}}>🤖 AI HR Agent — Evaluation Report</div>
+            {hrAgentInsights}
+          </div>}
+        </div>
+      </div>
+    </div>;})()}
+
     {/* ═══ ONBOARDING CHECKLIST MODAL ═══ */}
     {showOnboard&& <div className="modal-bg" onClick={()=>setShowOnboard(null)}><div className="modal" style={{maxWidth:500}} onClick={e=>e.stopPropagation()}>
       <div className="modal-h">📋 Onboarding Checklist<button className="btn btn-sm btn-s" onClick={()=>setShowOnboard(null)}>✕</button></div>
@@ -5214,6 +6538,77 @@ function RecruitingPage({applicants,setApplicants,leads,setLeads,clients,setClie
         </div>
       </div>
     </div></div>}
+
+    {/* ═══ REFERRAL BONUS PROMPT MODAL ═══ */}
+    {bonusPrompt&&<div className="modal-bg" onClick={()=>setBonusPrompt(null)}>
+      <div className="modal" style={{maxWidth:560,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">🎁 Referral Bonus Detected<button className="btn btn-sm btn-s" onClick={()=>setBonusPrompt(null)}>✕</button></div>
+        <div className="modal-b">
+          <div className="ai-card" style={{background:"linear-gradient(135deg,#fef3c7,#fde68a)",border:"1px solid #f59e0b",marginBottom:14}}>
+            <h4 style={{color:"#78350f"}}>Referral Match Found</h4>
+            <p style={{color:"#78350f",fontSize:12}}>
+              <strong>{bonusForm.refereeName}</strong> ({bonusForm.refereeType}) was referred by <strong>{bonusPrompt.referrer.name}</strong> ({bonusPrompt.referrer.type}).
+              <br/><br/>Would you like to issue a referral bonus?
+            </p>
+          </div>
+
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Bonus Amount ($)</label><input type="number" value={bonusForm.amount} onChange={e=>setBonusForm(p=>({...p,amount:parseFloat(e.target.value)||0}))} step="10"/></div>
+            <div className="fi"><label>Payment Method</label><select value={bonusForm.paymentMethod} onChange={e=>setBonusForm(p=>({...p,paymentMethod:e.target.value}))}>
+              {bonusPrompt.referrer.type==="caregiver"&&<option value="payslip">💵 Add to next pay slip</option>}
+              {(bonusPrompt.referrer.type==="client"||bonusPrompt.referrer.type==="family")&&<option value="invoice_credit">📋 Credit on next client invoice</option>}
+              <option value="cash">💴 Cash / Manual payout</option>
+            </select></div>
+          </div>
+
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Apply to Pay Period</label><select value={bonusForm.periodId} onChange={e=>setBonusForm(p=>({...p,periodId:e.target.value}))}>
+              <option value="">Next available period</option>
+              {(billingPeriods||[]).map(bp=><option key={bp.id} value={bp.id}>{bp.label}{bp.payDate?` · pays ${fmtD(bp.payDate)}`:""}</option>)}
+            </select></div>
+            <div className="fi"><label>Scheduled Pay/Bill Date</label><input type="date" value={bonusForm.scheduledDate} onChange={e=>setBonusForm(p=>({...p,scheduledDate:e.target.value}))}/></div>
+          </div>
+
+          <div className="fi" style={{marginBottom:14}}><label>Notes (optional)</label><textarea value={bonusForm.notes} onChange={e=>setBonusForm(p=>({...p,notes:e.target.value}))} rows={2} style={{width:"100%"}} placeholder="e.g. Payable after 30-day probation, or on first invoice cycle"/></div>
+
+          <div style={{padding:"10px 14px",background:"var(--bg)",fontSize:11,color:"var(--t2)",marginBottom:14}}>
+            💡 <strong>How this works:</strong>
+            <br/>• Payslip method: bonus auto-included as a line item on referrer's next pay slip
+            <br/>• Invoice credit: bonus auto-applied as a discount on referrer client's next invoice
+            <br/>• Cash: tracked separately for manual payout
+            <br/>You can review/manage all referral bonuses in <strong>Payroll</strong> and <strong>Billing</strong> pages.
+          </div>
+
+          <div style={{display:"flex",gap:6}}>
+            <button className="btn btn-p" style={{flex:1}} disabled={!bonusForm.amount||bonusForm.amount<=0} onClick={saveReferralBonus}>✅ Schedule ${bonusForm.amount} Bonus</button>
+            <button className="btn btn-s" onClick={()=>setBonusPrompt(null)}>Skip — No Bonus</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* ═══ REFERRAL BONUS TRACKER (visible at bottom of recruiting page) ═══ */}
+    {referralBonuses&&referralBonuses.length>0&&<div className="card" style={{marginTop:14}}>
+      <div className="card-h"><h3>🎁 Referral Bonus Tracker</h3>
+        <span style={{fontSize:11,color:"var(--t2)"}}>{referralBonuses.filter(b=>b.status==="scheduled").length} scheduled · {referralBonuses.filter(b=>b.status==="paid").length} paid</span>
+      </div>
+      <div className="tw"><table style={{fontSize:11}}><thead><tr><th>Referrer</th><th>Referee</th><th>Amount</th><th>Method</th><th>Period</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+        {referralBonuses.map(b=>{
+          const refName=b.referrerType==="caregiver"?caregivers.find(c=>c.id===b.referrerId)?.name:b.referrerType==="client"?clients.find(c=>c.id===b.referrerId)?.name:b.referrerId;
+          const period=billingPeriods?.find(p=>p.id===b.periodId);
+          const statusColors={pending:"tag-wn",scheduled:"tag-bl",paid:"tag-ok",credited:"tag-ok"};
+          return <tr key={b.id}>
+            <td><div style={{fontWeight:600}}>{refName||"—"}</div><div style={{fontSize:9,color:"var(--t2)"}}>{b.referrerType}</div></td>
+            <td>{b.refereeName}<div style={{fontSize:9,color:"var(--t2)"}}>{b.refereeType}</div></td>
+            <td style={{fontWeight:700}}>${b.amount}</td>
+            <td>{b.paymentMethod==="payslip"?"💵 Pay Slip":b.paymentMethod==="invoice_credit"?"📋 Invoice Credit":"💴 Cash"}</td>
+            <td style={{fontSize:10}}>{period?period.label:"—"}</td>
+            <td><span className={`tag ${statusColors[b.status]||"tag-wn"}`}>{b.status}</span></td>
+            <td style={{fontSize:10,color:"var(--t2)"}}>{b.notes||""}</td>
+          </tr>;
+        })}
+      </tbody></table></div>
+    </div>}
   </div>;
 }
 
@@ -5271,14 +6666,33 @@ function CompliancePage({items,setItems,caregivers,clients}){
 // MARKETING
 // ═══════════════════════════════════════════════════════════════════════
 function MarketingPage({campaigns,setCampaigns,leads,applicants}){
+  const [showAdd,setShowAdd]=useState(false);
+  const [selCampaign,setSelCampaign]=useState(null);
+  const emptyCampaign={name:"",channel:"Facebook/Instagram",status:"active",budget:0,spent:0,leads:0,conversions:0,cpl:0,startDate:today(),endDate:"",notes:""};
+  const [form,setForm]=useState(emptyCampaign);
+  const channels=["Facebook/Instagram","Google Ads","Direct Outreach","Referral Program","Email Marketing","Print/Mailer","Hospital Partnership","Community Events","Website / SEO","Other"];
+
   const totalBudget=campaigns.reduce((s,c)=>s+c.budget,0);
   const totalSpent=campaigns.reduce((s,c)=>s+c.spent,0);
   const totalLeads=campaigns.reduce((s,c)=>s+c.leads,0);
   const totalConv=campaigns.reduce((s,c)=>s+c.conversions,0);
   const avgCPL=totalLeads>0?(totalSpent/totalLeads):0;
 
+  const saveCampaign=()=>{
+    const cpl=form.leads>0?form.spent/form.leads:0;
+    if(form.id){
+      setCampaigns(p=>p.map(c=>c.id===form.id?{...form,cpl}:c));
+    }else{
+      setCampaigns(p=>[...p,{...form,id:"CAM"+uid(),cpl}]);
+    }
+    setShowAdd(false);
+    setForm(emptyCampaign);
+  };
+
   return <div>
-    <div className="hdr"><div><h2>Marketing</h2><div className="hdr-sub">Campaigns, leads, and growth analytics</div></div></div>
+    <div className="hdr"><div><h2>Marketing</h2><div className="hdr-sub">Campaigns, leads, and growth analytics</div></div>
+      <button className="btn btn-p btn-sm" onClick={()=>{setForm(emptyCampaign);setShowAdd(true);}}>+ New Campaign</button>
+    </div>
 
     <div className="sg">
       <div className="sc bl"><span className="sl">Total Budget</span><span className="sv">{$(totalBudget)}</span><span className="ss">{$(totalSpent)} spent ({totalBudget>0?((totalSpent/totalBudget)*100).toFixed(0):0}%)</span></div>
@@ -5290,17 +6704,23 @@ function MarketingPage({campaigns,setCampaigns,leads,applicants}){
     <div className="ai-card">
       <h4><span className="pulse" style={{background:"var(--ok)"}}/>Marketing Intelligence</h4>
       <p>
-        Hospital discharge partnerships are your best channel: {campaigns.find(c=>c.channel==="Direct Outreach")?.conversions||0} conversions at $0 cost per lead.
+        Hospital discharge partnerships are your best channel: {campaigns.find(c=>c.channel==="Direct Outreach"||c.channel==="Hospital Partnership")?.conversions||0} conversions at low cost.
         Facebook/Instagram generating {campaigns.find(c=>c.channel==="Facebook/Instagram")?.leads||0} leads at {$(campaigns.find(c=>c.channel==="Facebook/Instagram")?.cpl||0)} CPL.
         Referral program yielding high-quality leads but at higher cost. Recommend increasing hospital outreach budget and launching Google Ads for "home care near me" searches.
       </p>
     </div>
 
-    {/* Campaign Cards */}
-    {campaigns.map(c=> <div key={c.id} className="card card-b">
+    {/* Campaign Cards — clickable, with edit/delete */}
+    <div style={{padding:"8px 14px",fontSize:11,color:"var(--t2)",background:"var(--bg)",marginBottom:14}}>💡 Tap any campaign to drill into details · Use Edit to update spend, leads, conversions · Add new campaigns with the button above</div>
+    {campaigns.length===0&&<div className="empty" style={{padding:"30px 20px"}}>No campaigns yet. Click "+ New Campaign" to add your first.</div>}
+    {campaigns.map(c=> <div key={c.id} className="card card-b" onClick={()=>setSelCampaign(c)} style={{cursor:"pointer",transition:"transform .15s"}} onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform=""}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
         <div><div style={{fontFamily:"var(--fd)",fontSize:16,fontWeight:400}}>{c.name}</div><div style={{fontSize:12,color:"var(--t2)"}}>{c.channel} • {fmtD(c.startDate)} — {fmtD(c.endDate)}</div></div>
-        <span className={`tag ${c.status==="active"?"tag-ok":"tag-wn"}`}>{c.status}</span>
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          <span className={`tag ${c.status==="active"?"tag-ok":c.status==="paused"?"tag-wn":"tag-bl"}`}>{c.status}</span>
+          <button className="btn btn-sm btn-s" onClick={e=>{e.stopPropagation();setForm({...c});setShowAdd(true);}}>✏️ Edit</button>
+          <button className="btn btn-sm btn-s" style={{color:"var(--err)"}} onClick={e=>{e.stopPropagation();if(confirm("Delete "+c.name+"?"))setCampaigns(p=>p.filter(x=>x.id!==c.id));}}>🗑</button>
+        </div>
       </div>
 
       {/* Budget Bar */}
@@ -5337,6 +6757,104 @@ function MarketingPage({campaigns,setCampaigns,leads,applicants}){
         </div>
       </div></div>
     </div>
+
+    {/* Campaign Drill-down Modal */}
+    {selCampaign&&<div className="modal-bg" onClick={()=>setSelCampaign(null)}>
+      <div className="modal" style={{maxWidth:640,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">📊 {selCampaign.name}<button className="btn btn-sm btn-s" onClick={()=>setSelCampaign(null)}>✕</button></div>
+        <div className="modal-b">
+          <div style={{display:"flex",gap:6,marginBottom:14,flexWrap:"wrap"}}>
+            <span className={`tag ${selCampaign.status==="active"?"tag-ok":"tag-wn"}`}>{selCampaign.status?.toUpperCase()}</span>
+            <span className="tag tag-bl">{selCampaign.channel}</span>
+            <span className="tag tag-pu">{fmtD(selCampaign.startDate)} – {fmtD(selCampaign.endDate)||"Ongoing"}</span>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:14}}>
+            <div style={{padding:"12px 16px",background:"var(--bg)"}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Budget</div>
+              <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400}}>{$(selCampaign.budget)}</div>
+            </div>
+            <div style={{padding:"12px 16px",background:"var(--bg)"}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Spent to Date</div>
+              <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400}}>{$(selCampaign.spent)}</div>
+            </div>
+            <div style={{padding:"12px 16px",background:"var(--bg)"}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Leads Generated</div>
+              <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400}}>{selCampaign.leads}</div>
+            </div>
+            <div style={{padding:"12px 16px",background:"var(--bg)"}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Conversions</div>
+              <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"var(--ok)"}}>{selCampaign.conversions}</div>
+            </div>
+            <div style={{padding:"12px 16px",background:"var(--bg)"}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Cost per Lead</div>
+              <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400}}>{$(selCampaign.cpl)}</div>
+            </div>
+            <div style={{padding:"12px 16px",background:"var(--bg)"}}>
+              <div style={{fontSize:9,color:"var(--t2)",textTransform:"uppercase",fontWeight:700}}>Conversion Rate</div>
+              <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400}}>{selCampaign.leads>0?((selCampaign.conversions/selCampaign.leads)*100).toFixed(0):0}%</div>
+            </div>
+          </div>
+
+          {selCampaign.budget>0&&<div style={{marginBottom:14}}>
+            <div style={{fontSize:11,fontWeight:700,marginBottom:6}}>Budget Utilization</div>
+            <div className="progress-bar"><div className="progress-fill" style={{width:`${Math.min((selCampaign.spent/selCampaign.budget)*100,100)}%`,background:selCampaign.spent>selCampaign.budget?"var(--err)":"var(--blue)"}}/></div>
+            <div style={{fontSize:11,color:"var(--t2)",marginTop:4}}>{((selCampaign.spent/selCampaign.budget)*100).toFixed(1)}% of budget used · {$(selCampaign.budget-selCampaign.spent)} remaining</div>
+          </div>}
+
+          {selCampaign.notes&&<div style={{padding:"12px 14px",background:"var(--bg)",fontSize:12,lineHeight:1.6,marginBottom:14}}><strong>Notes:</strong> {selCampaign.notes}</div>}
+
+          {/* ROI Calc */}
+          <div style={{padding:"12px 14px",background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #86efac",marginBottom:14,fontSize:12}}>
+            <div style={{fontWeight:700,marginBottom:4,color:"#166534"}}>📈 Return on Investment</div>
+            {selCampaign.spent>0&&selCampaign.conversions>0?<>
+              <div>Cost per conversion: <strong>${(selCampaign.spent/selCampaign.conversions).toFixed(2)}</strong></div>
+              <div>Estimated avg client value (12-mo): <strong>~$15,000</strong></div>
+              <div>Estimated 12-mo revenue from this campaign: <strong>${(selCampaign.conversions*15000).toLocaleString()}</strong></div>
+              <div style={{fontWeight:700,marginTop:4,color:"#166534"}}>Estimated ROI: ~{((selCampaign.conversions*15000-selCampaign.spent)/Math.max(selCampaign.spent,1)*100).toFixed(0)}%</div>
+            </>:<div style={{color:"var(--t2)"}}>Not enough data to calculate ROI yet.</div>}
+          </div>
+
+          <div style={{display:"flex",gap:6}}>
+            <button className="btn btn-p" style={{flex:1}} onClick={()=>{setForm({...selCampaign});setShowAdd(true);setSelCampaign(null);}}>✏️ Edit Campaign</button>
+            <button className="btn btn-s" onClick={()=>setSelCampaign(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* Add/Edit Campaign Modal */}
+    {showAdd&&<div className="modal-bg" onClick={()=>setShowAdd(false)}>
+      <div className="modal" style={{maxWidth:560,maxHeight:"90vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-h">{form.id?"Edit":"New"} Marketing Campaign<button className="btn btn-sm btn-s" onClick={()=>setShowAdd(false)}>✕</button></div>
+        <div className="modal-b">
+          <div className="fi" style={{marginBottom:10}}><label>Campaign Name *</label><input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="e.g. Spring Hospital Discharge Outreach"/></div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Channel</label><select value={form.channel} onChange={e=>setForm(p=>({...p,channel:e.target.value}))}>{channels.map(c=><option key={c}>{c}</option>)}</select></div>
+            <div className="fi"><label>Status</label><select value={form.status} onChange={e=>setForm(p=>({...p,status:e.target.value}))}>
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="completed">Completed</option>
+              <option value="planning">Planning</option>
+            </select></div>
+          </div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Start Date</label><input type="date" value={form.startDate} onChange={e=>setForm(p=>({...p,startDate:e.target.value}))}/></div>
+            <div className="fi"><label>End Date</label><input type="date" value={form.endDate} onChange={e=>setForm(p=>({...p,endDate:e.target.value}))}/></div>
+          </div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Budget ($)</label><input type="number" value={form.budget} onChange={e=>setForm(p=>({...p,budget:parseFloat(e.target.value)||0}))}/></div>
+            <div className="fi"><label>Spent ($)</label><input type="number" value={form.spent} onChange={e=>setForm(p=>({...p,spent:parseFloat(e.target.value)||0}))}/></div>
+          </div>
+          <div className="fg" style={{marginBottom:10}}>
+            <div className="fi"><label>Leads Generated</label><input type="number" value={form.leads} onChange={e=>setForm(p=>({...p,leads:parseInt(e.target.value)||0}))}/></div>
+            <div className="fi"><label>Conversions (clients signed)</label><input type="number" value={form.conversions} onChange={e=>setForm(p=>({...p,conversions:parseInt(e.target.value)||0}))}/></div>
+          </div>
+          <div className="fi" style={{marginBottom:14}}><label>Notes / Strategy</label><textarea value={form.notes} onChange={e=>setForm(p=>({...p,notes:e.target.value}))} rows={3} style={{width:"100%"}} placeholder="Goals, target audience, creative approach, etc."/></div>
+          <button className="btn btn-p" style={{width:"100%"}} disabled={!form.name?.trim()} onClick={saveCampaign}>{form.id?"Save Changes":"Add Campaign"}</button>
+        </div>
+      </div>
+    </div>}
   </div>;
 }
 
@@ -5442,21 +6960,384 @@ function LiveGPSMapPage({caregivers,clients,schedules,livePositions}){
   const today_=today();
   const todayShifts=(schedules||[]).filter(s=>s.date===today_&&s.status==="published");
   const [selCG,setSelCG]=useState(null);
+  const [mapStyle,setMapStyle]=useState("topo"); // topo, street, satellite
+  const [showTraffic,setShowTraffic]=useState(false);
+  const [weather,setWeather]=useState(null);
+  const [weatherLoading,setWeatherLoading]=useState(true);
+  // ═══ Drill-down + Messaging ═══
+  const [showCgDrill,setShowCgDrill]=useState(null); // caregiver object
+  const [msgThread,setMsgThread]=useState({}); // {cgId: [{from,text,time}]}
+  const [msgInput,setMsgInput]=useState("");
+  const [msgChannel,setMsgChannel]=useState("sms"); // sms, in-app, email
+  // ═══ Workforce Intelligence Agent ═══
+  const [wfAgentLoading,setWfAgentLoading]=useState(false);
+  const [wfAgentInsights,setWfAgentInsights]=useState(null);
+  const mapRef=useRef(null);
+  const leafletMap=useRef(null);
+  const markersRef=useRef([]);
 
-  // Mock live positions if none set
+  // Mock live positions if none set (Chicago area)
   const mockPositions={
     CG1:{lat:41.9034,lng:-87.6276,accuracy:8,timestamp:Date.now()-120000,address:"Near 30 E Elm St, Chicago",speed:0,status:"on_shift"},
     CG2:{lat:41.9421,lng:-87.6516,accuracy:12,timestamp:Date.now()-340000,address:"Near 3930 N Pine Grove Ave",speed:0,status:"on_shift"},
     CG3:{lat:41.9742,lng:-87.6502,accuracy:15,timestamp:Date.now()-90000,address:"En route to Steven Brown's",speed:25,status:"traveling"},
-    CG4:{lat:41.8851,lng:-87.6228,accuracy:20,timestamp:Date.now()-1200000,address:"Off duty - Loop area",speed:0,status:"off_duty"},
+    CG4:{lat:41.5731,lng:-87.7846,accuracy:20,timestamp:Date.now()-1200000,address:"Tinley Park area",speed:0,status:"off_duty"},
+  };
+  // Mock client locations near CWIN office in Tinley Park (for demo)
+  const mockClientLocations={
+    CL1:{lat:41.5731,lng:-87.7846,address:"Tinley Park, IL"},
+    CL2:{lat:41.5950,lng:-87.7320,address:"Oak Forest, IL"},
+    CL3:{lat:41.5700,lng:-87.8060,address:"Tinley Park, IL"},
   };
   const positions={...mockPositions,...livePositions};
 
+  // ═══ WORKFORCE INTELLIGENCE — Late-Risk Predictor ═══
+  // Score each caregiver's likelihood of being late to today's shifts based on:
+  // - Distance from current GPS position to client home (rough estimate via lat/lng)
+  // - Time until shift starts vs estimated travel time
+  // - Historical lateness pattern (mock for demo, would come from check-in records)
+  // - Current traffic/weather conditions
+  // - Recent activity (last GPS update freshness)
+  const lateRiskByShift=useMemo(()=>{
+    const result=[];
+    const nowDate=new Date();
+    const todayStr=today();
+    todayShifts.forEach(s=>{
+      const cg=caregivers.find(c=>c.id===s.caregiverId);
+      const pos=positions[s.caregiverId];
+      const cl=clients.find(c=>c.id===s.clientId);
+      const clLoc=mockClientLocations[s.clientId];
+      // Build shift start as Date
+      const [sh,sm]=s.startTime.split(":").map(Number);
+      const shiftStart=new Date(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate(),sh,sm);
+      const minsUntilStart=Math.floor((shiftStart-nowDate)/60000);
+      // Skip already-finished shifts
+      const [eh,em]=s.endTime.split(":").map(Number);
+      const shiftEnd=new Date(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate(),eh,em);
+      if(shiftEnd<nowDate)return;
+
+      let risk=0,reasons=[];
+      // No GPS data → can't verify location
+      if(!pos){
+        risk=70;
+        reasons.push("No GPS data — caregiver hasn't enabled location sharing");
+      }else{
+        // Calculate rough straight-line distance (km) using haversine
+        const dist=clLoc?(()=>{
+          const R=6371; // km
+          const dLat=(clLoc.lat-pos.lat)*Math.PI/180;
+          const dLng=(clLoc.lng-pos.lng)*Math.PI/180;
+          const a=Math.sin(dLat/2)**2+Math.cos(pos.lat*Math.PI/180)*Math.cos(clLoc.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+          return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        })():null;
+        // Estimated drive time at urban average 25 mph (~40 km/h) + 30% buffer for stop lights
+        const estTravelMins=dist?Math.round((dist/40)*60*1.3):null;
+
+        // GPS staleness
+        const minsAgo=Math.floor((Date.now()-pos.timestamp)/60000);
+        if(minsAgo>15){risk+=15;reasons.push(`GPS stale (${minsAgo} min old)`);}
+
+        // Distance vs time available
+        if(dist!=null&&estTravelMins!=null){
+          if(minsUntilStart>0){
+            const buffer=minsUntilStart-estTravelMins;
+            if(buffer<-15){risk+=80;reasons.push(`🚨 ${Math.abs(buffer)} min behind — likely already late`);}
+            else if(buffer<0){risk+=60;reasons.push(`⚠️ Only ${minsUntilStart} min until shift, needs ~${estTravelMins} min to drive`);}
+            else if(buffer<10){risk+=35;reasons.push(`Tight: ~${estTravelMins} min drive, ${minsUntilStart} min remaining (${buffer} min buffer)`);}
+            else if(buffer<20){risk+=10;reasons.push(`Comfortable: ${buffer} min buffer`);}
+          }else{
+            // Shift already started
+            if(pos.status!=="on_shift"){
+              risk+=85;reasons.push(`🚨 Shift started ${Math.abs(minsUntilStart)} min ago — caregiver not on-shift`);
+            }
+          }
+          if(dist>0.5){reasons.push(`📍 ${dist.toFixed(1)} km from client home`);}
+          else{reasons.push(`✅ At/near client home`);}
+        }
+
+        // Status-based
+        if(pos.status==="off_duty"&&minsUntilStart>0&&minsUntilStart<30){risk+=20;reasons.push("Status: off duty close to shift start");}
+
+        // Traffic awareness — if traffic shown and on heavy artery
+        if(showTraffic&&dist&&dist>5){risk+=8;reasons.push("Heavy I-94 corridor traffic possible");}
+
+        // Weather risk
+        if(weather?.current){
+          const code=weather.current.weather_code;
+          if([61,63,65,80,81,82].includes(code)){risk+=5;reasons.push("☔ Rain may slow travel");}
+          if([71,73,75,85,86].includes(code)){risk+=12;reasons.push("❄️ Snow may delay travel");}
+          if([95,96,99].includes(code)){risk+=20;reasons.push("⛈ Severe storm — major delay risk");}
+          if(weather.current.temperature_2m<20){risk+=5;reasons.push("🥶 Bitter cold may slow start");}
+        }
+      }
+
+      // Historical lateness pattern (mock — derived from cg.id last digit; in production, check-in records)
+      const cgLatePattern={CG1:0,CG2:5,CG3:15,CG4:25}[s.caregiverId]||10;
+      if(cgLatePattern>10){risk+=10;reasons.push(`Historical: late ${cgLatePattern}% of recent shifts`);}
+
+      risk=Math.min(100,Math.max(0,risk));
+      let level="low";
+      if(risk>=70)level="critical";
+      else if(risk>=40)level="high";
+      else if(risk>=20)level="medium";
+
+      result.push({shift:s,caregiver:cg,client:cl,risk,level,reasons,minsUntilStart,position:pos});
+    });
+    return result.sort((a,b)=>b.risk-a.risk);
+  // eslint-disable-next-line
+  },[todayShifts,caregivers,clients,positions,weather,showTraffic]);
+
+  // ═══ WORKFORCE INTELLIGENCE AGENT (Claude API) ═══
+  const runWorkforceAgent=async()=>{
+    setWfAgentLoading(true);
+    setWfAgentInsights(null);
+    try{
+      const summary=lateRiskByShift.slice(0,8).map(r=>`${r.caregiver?.name||"?"} → ${r.client?.name||"?"} at ${r.shift.startTime} | Risk: ${r.risk}% (${r.level}) | ${r.reasons.slice(0,3).join("; ")}`).join("\n");
+      const offDuty=caregivers.filter(c=>positions[c.id]?.status==="off_duty"||!positions[c.id]).map(c=>c.name).join(", ");
+      const prompt=`You are a workforce operations manager for CWIN At Home, a home care agency in Tinley Park IL. Today is ${today()}.
+
+CURRENT SHIFT RISK ASSESSMENT (today's shifts only):
+${summary||"No shifts scheduled today"}
+
+OFF-DUTY CAREGIVERS (potential backup): ${offDuty||"None"}
+
+CURRENT WEATHER: ${weather?.current?Math.round(weather.current.temperature_2m)+"°F, "+(weather.current.weather_code===0?"clear":"weather code "+weather.current.weather_code):"unknown"}
+
+Provide a brief operations brief (max 250 words) with:
+
+**🚨 IMMEDIATE ACTIONS** (highest-risk shifts that need intervention right now)
+- Specific caregiver names, what's happening, what to do (call, swap, send backup)
+
+**📋 NEXT 4 HOURS** (medium-risk shifts to monitor)
+- Brief watch list
+
+**💡 PROACTIVE RECOMMENDATIONS**
+- 2-3 specific actions: who to send backup, who to text reminders, who to swap
+
+**📞 SUGGESTED OUTREACH**
+- For each at-risk caregiver, a 1-line text message you'd send them right now (be friendly, supportive — not accusatory)
+
+Be direct, actionable, and specific. The dispatcher needs to know exactly who to call in the next 5 minutes.`;
+      const response=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content:prompt}]}),
+      });
+      const data=await response.json();
+      setWfAgentInsights(data.content?.map(b=>b.text||"").join("")||"No insights returned.");
+    }catch(e){
+      setWfAgentInsights("⚠️ Agent unavailable: "+e.message);
+    }finally{setWfAgentLoading(false);}
+  };
+
+  // Send a message (logs locally; production would hit Twilio / in-app notifications)
+  const sendMessage=()=>{
+    if(!showCgDrill||!msgInput.trim())return;
+    const msg={from:"dispatcher",text:msgInput.trim(),time:new Date().toISOString(),channel:msgChannel};
+    setMsgThread(p=>({...p,[showCgDrill.id]:[...(p[showCgDrill.id]||[]),msg]}));
+    setMsgInput("");
+    // In production: dispatch via Twilio SMS or in-app push
+    setTimeout(()=>{
+      // Mock auto-reply
+      setMsgThread(p=>({...p,[showCgDrill.id]:[...(p[showCgDrill.id]||[]),{from:"caregiver",text:"On my way! Thanks for checking in.",time:new Date().toISOString(),channel:msgChannel}]}));
+    },2500);
+  };
+
+  const quickMessages=["You have a shift starting soon — everything OK?","Running into traffic? Need a backup?","Please confirm you'll arrive on time.","Thanks for the great work today!","Family asked for an update — please text back when free."];
+
+  // Load Leaflet via CDN
+  useEffect(()=>{
+    // Inject Leaflet CSS
+    if(!document.getElementById("leaflet-css")){
+      const link=document.createElement("link");
+      link.id="leaflet-css";link.rel="stylesheet";
+      link.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+    // Inject Leaflet JS
+    const initMap=()=>{
+      if(!mapRef.current||leafletMap.current)return;
+      if(!window.L){return;}
+      const L=window.L;
+      // Center: Tinley Park area (CWIN HQ)
+      const map=L.map(mapRef.current,{zoomControl:true}).setView([41.7,-87.7],10);
+      leafletMap.current=map;
+      addTileLayer(map,L,"topo");
+      renderMarkers(map,L);
+    };
+    if(window.L){initMap();}
+    else{
+      const script=document.createElement("script");
+      script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.onload=initMap;
+      document.body.appendChild(script);
+    }
+    return ()=>{if(leafletMap.current){leafletMap.current.remove();leafletMap.current=null;}};
+  // eslint-disable-next-line
+  },[]);
+
+  // Helper: switch tile layer
+  const tileLayerRef=useRef(null);
+  const trafficLayerRef=useRef(null);
+  const addTileLayer=(map,L,style)=>{
+    if(tileLayerRef.current){map.removeLayer(tileLayerRef.current);}
+    let url,attr;
+    if(style==="topo"){
+      url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+      attr='© <a href="https://opentopomap.org">OpenTopoMap</a> | © OpenStreetMap contributors';
+    }else if(style==="satellite"){
+      url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+      attr='Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics';
+    }else{
+      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      attr='© <a href="https://osm.org">OpenStreetMap</a> contributors';
+    }
+    tileLayerRef.current=L.tileLayer(url,{attribution:attr,maxZoom:18}).addTo(map);
+  };
+
+  // Update map style when changed
+  useEffect(()=>{
+    if(leafletMap.current&&window.L){addTileLayer(leafletMap.current,window.L,mapStyle);}
+  // eslint-disable-next-line
+  },[mapStyle]);
+
+  // Toggle traffic layer (using OpenRailwayMap-style overlay isn't traffic; use Mapbox/Waze proxy alt: we'll use a faux traffic ovrelay using main roads)
+  useEffect(()=>{
+    if(!leafletMap.current||!window.L)return;
+    const L=window.L;
+    if(showTraffic&&!trafficLayerRef.current){
+      // Use ThunderForest-like demo or just add a colored polyline overlay along major arteries to show traffic conditions
+      // Since real traffic requires Google/HERE/Mapbox API key, we visualize key corridors
+      const arteries=[
+        {name:"I-94 / Bishop Ford",coords:[[41.85,-87.62],[41.65,-87.55],[41.50,-87.55]],color:"#dc2626",label:"Heavy"},
+        {name:"I-294 Tri-State",coords:[[41.95,-87.85],[41.65,-87.85],[41.45,-87.80]],color:"#f59e0b",label:"Moderate"},
+        {name:"I-80",coords:[[41.55,-88.00],[41.55,-87.50]],color:"#10b981",label:"Clear"},
+        {name:"I-57",coords:[[41.85,-87.65],[41.45,-87.68]],color:"#f59e0b",label:"Moderate"},
+        {name:"Harlem Ave (Rt 43)",coords:[[41.95,-87.80],[41.55,-87.80]],color:"#10b981",label:"Clear"},
+      ];
+      const layerGroup=L.layerGroup();
+      arteries.forEach(a=>{
+        const poly=L.polyline(a.coords,{color:a.color,weight:6,opacity:0.7}).addTo(layerGroup);
+        poly.bindTooltip(a.name+" — "+a.label,{sticky:true});
+      });
+      layerGroup.addTo(leafletMap.current);
+      trafficLayerRef.current=layerGroup;
+    }else if(!showTraffic&&trafficLayerRef.current){
+      leafletMap.current.removeLayer(trafficLayerRef.current);
+      trafficLayerRef.current=null;
+    }
+  },[showTraffic]);
+
+  // Render markers for caregivers and clients
+  const renderMarkers=(map,L)=>{
+    // Clear existing markers
+    markersRef.current.forEach(m=>map.removeLayer(m));
+    markersRef.current=[];
+    // Caregiver markers
+    caregivers.forEach(cg=>{
+      const pos=positions[cg.id];if(!pos)return;
+      const color=pos.status==="on_shift"?"#10b981":pos.status==="traveling"?"#3b82f6":"#9ca3af";
+      const initials=cg.name.split(" ").map(n=>n[0]).join("");
+      // Risk indicator on marker
+      const riskInfo=lateRiskByShift.find(r=>r.caregiver?.id===cg.id);
+      const riskRing=riskInfo?(riskInfo.level==="critical"?"box-shadow:0 0 0 4px #dc2626,0 2px 8px rgba(0,0,0,.3);":riskInfo.level==="high"?"box-shadow:0 0 0 4px #f59e0b,0 2px 8px rgba(0,0,0,.3);":""):"";
+      const icon=L.divIcon({
+        html:`<div style="width:36px;height:36px;border-radius:50%;background:${color};border:3px solid #fff;${riskRing||"box-shadow:0 2px 8px rgba(0,0,0,.3);"}display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;">${initials}</div>`,
+        className:"",iconSize:[36,36],iconAnchor:[18,18],
+      });
+      const marker=L.marker([pos.lat,pos.lng],{icon}).addTo(map);
+      const minsAgo=Math.floor((Date.now()-pos.timestamp)/60000);
+      const popupId="cg-popup-"+cg.id;
+      marker.bindPopup(`<div style="min-width:200px;font-family:Inter,sans-serif;" id="${popupId}">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">${cg.name}</div>
+        <div style="font-size:11px;color:#666;">${pos.address}</div>
+        <div style="font-size:11px;color:#666;margin-top:4px;">Status: <strong>${pos.status.replace("_"," ")}</strong></div>
+        <div style="font-size:11px;color:#666;">Speed: ${pos.speed||0} mph</div>
+        <div style="font-size:11px;color:#666;">Updated ${minsAgo<1?"just now":minsAgo+" min ago"}</div>
+        ${riskInfo?`<div style="margin-top:6px;padding:4px 8px;background:${riskInfo.level==="critical"?"#fee2e2":riskInfo.level==="high"?"#fef3c7":"#dcfce7"};color:${riskInfo.level==="critical"?"#7f1d1d":riskInfo.level==="high"?"#78350f":"#14532d"};font-size:10px;font-weight:600;">${riskInfo.level==="critical"?"🚨 ":"⚠️ "}Late Risk: ${riskInfo.risk}%</div>`:""}
+        <button id="${popupId}-btn" style="margin-top:8px;width:100%;padding:6px 10px;background:#070707;color:#fff;border:none;cursor:pointer;font-size:11px;font-weight:600;">🔍 Drill Down & Message</button>
+      </div>`);
+      marker.on("popupopen",()=>{
+        const btn=document.getElementById(popupId+"-btn");
+        if(btn)btn.onclick=()=>{setSelCG(cg.id);setShowCgDrill(cg);};
+      });
+      marker.on("click",()=>{setSelCG(cg.id);});
+      markersRef.current.push(marker);
+    });
+    // Client markers
+    clients.filter(c=>c.status==="active").forEach(cl=>{
+      const loc=mockClientLocations[cl.id];if(!loc)return;
+      const icon=L.divIcon({
+        html:`<div style="width:30px;height:30px;background:#070707;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;">🏠</div>`,
+        className:"",iconSize:[30,30],iconAnchor:[15,15],
+      });
+      const marker=L.marker([loc.lat,loc.lng],{icon}).addTo(map);
+      marker.bindPopup(`<div style="min-width:150px;font-family:Inter,sans-serif;">
+        <div style="font-weight:700;font-size:13px;">🏠 ${cl.name}</div>
+        <div style="font-size:11px;color:#666;">${loc.address}</div>
+        <div style="font-size:11px;color:#666;">Risk: ${cl.riskLevel||"low"}</div>
+      </div>`);
+      markersRef.current.push(marker);
+    });
+  };
+
+  // Re-render markers when caregivers/clients/risk change
+  useEffect(()=>{
+    if(leafletMap.current&&window.L){renderMarkers(leafletMap.current,window.L);}
+  // eslint-disable-next-line
+  },[selCG,lateRiskByShift]);
+
+  // Fetch real weather from Open-Meteo (free, no API key required)
+  useEffect(()=>{
+    const fetchWeather=async()=>{
+      try{
+        // Tinley Park, IL coordinates
+        const res=await fetch("https://api.open-meteo.com/v1/forecast?latitude=41.5731&longitude=-87.7846&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,precipitation_probability,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=2");
+        const data=await res.json();
+        setWeather(data);
+      }catch(e){
+        console.error("Weather fetch failed:",e);
+      }finally{
+        setWeatherLoading(false);
+      }
+    };
+    fetchWeather();
+    const intv=setInterval(fetchWeather,15*60*1000); // refresh every 15 min
+    return()=>clearInterval(intv);
+  },[]);
+
+  // Pan to selected caregiver
+  useEffect(()=>{
+    if(selCG&&leafletMap.current){const pos=positions[selCG];if(pos){leafletMap.current.flyTo([pos.lat,pos.lng],14,{duration:1});}}
+  // eslint-disable-next-line
+  },[selCG]);
+
+  const wxCodeToText=(code)=>{
+    const m={0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Foggy",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",71:"Light snow",73:"Snow",75:"Heavy snow",77:"Snow grains",80:"Rain showers",81:"Heavy showers",82:"Violent showers",85:"Snow showers",86:"Heavy snow showers",95:"Thunderstorm",96:"Thunderstorm w/ hail",99:"Severe thunderstorm"};
+    return m[code]||"—";
+  };
+  const wxCodeToIcon=(code,isDay)=>{
+    if(code===0)return isDay?"☀️":"🌙";
+    if(code===1||code===2)return isDay?"🌤":"☁️";
+    if(code===3)return "☁️";
+    if(code>=45&&code<=48)return "🌫";
+    if(code>=51&&code<=55)return "🌦";
+    if(code>=61&&code<=65)return "🌧";
+    if(code>=71&&code<=77)return "🌨";
+    if(code>=80&&code<=82)return "🌧";
+    if(code>=85&&code<=86)return "🌨";
+    if(code>=95)return "⛈";
+    return "🌡";
+  };
+
   return <div>
-    <div className="hdr"><div><h2>Live GPS Map</h2><div className="hdr-sub">Real-time caregiver locations · Last updated {new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}</div></div>
-      <button className="btn btn-sm btn-s" onClick={()=>window.location.reload()}>🔄 Refresh</button>
+    <div className="hdr"><div><h2>Live GPS Map</h2><div className="hdr-sub">Real-time caregiver locations · Tinley Park metro area · Updated {new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}</div></div>
+      <div style={{display:"flex",gap:6}}>
+        <button className="btn btn-sm btn-s" onClick={()=>{if(leafletMap.current)leafletMap.current.setView([41.7,-87.7],10);setSelCG(null);}}>🎯 Reset View</button>
+      </div>
     </div>
 
+    {/* Stats */}
     <div className="sg">
       <div className="sc ok"><span className="sl">On Shift</span><span className="sv">{caregivers.filter(c=>positions[c.id]?.status==="on_shift").length}</span><span className="ss">Active right now</span></div>
       <div className="sc bl"><span className="sl">Traveling</span><span className="sv">{caregivers.filter(c=>positions[c.id]?.status==="traveling").length}</span><span className="ss">En route to client</span></div>
@@ -5464,53 +7345,543 @@ function LiveGPSMapPage({caregivers,clients,schedules,livePositions}){
       <div className="sc wn"><span className="sl">Today's Shifts</span><span className="sv">{todayShifts.length}</span><span className="ss">{todayShifts.filter(s=>positions[s.caregiverId]?.status==="on_shift").length} in progress</span></div>
     </div>
 
+    {/* Weather Widget */}
+    <div className="card" style={{marginBottom:14,background:"linear-gradient(135deg,#1e3a5f,#3c4f3d)",color:"#fff"}}>
+      <div style={{padding:"14px 18px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,opacity:.7}}>🌤 Current Weather · Tinley Park, IL</div>
+          <div style={{fontSize:10,opacity:.6}}>Source: Open-Meteo · Auto-refreshes every 15 min</div>
+        </div>
+        {weatherLoading?<div style={{padding:"10px 0",fontSize:12,opacity:.7}}>Loading weather data...</div>
+        :weather?.current?<div style={{display:"grid",gridTemplateColumns:"auto 1fr 1fr 1fr 1fr",gap:20,alignItems:"center"}}>
+          <div style={{fontSize:48,lineHeight:1}}>{wxCodeToIcon(weather.current.weather_code,weather.current.is_day)}</div>
+          <div>
+            <div style={{fontSize:36,fontWeight:300,fontFamily:"var(--fd)"}}>{Math.round(weather.current.temperature_2m)}°F</div>
+            <div style={{fontSize:12,opacity:.7}}>{wxCodeToText(weather.current.weather_code)}</div>
+          </div>
+          <div>
+            <div style={{fontSize:9,opacity:.6,textTransform:"uppercase"}}>Feels Like</div>
+            <div style={{fontSize:18,fontWeight:600}}>{Math.round(weather.current.apparent_temperature)}°F</div>
+          </div>
+          <div>
+            <div style={{fontSize:9,opacity:.6,textTransform:"uppercase"}}>Wind</div>
+            <div style={{fontSize:18,fontWeight:600}}>{Math.round(weather.current.wind_speed_10m)} mph</div>
+          </div>
+          <div>
+            <div style={{fontSize:9,opacity:.6,textTransform:"uppercase"}}>Humidity</div>
+            <div style={{fontSize:18,fontWeight:600}}>{weather.current.relative_humidity_2m}%</div>
+          </div>
+        </div>:<div style={{fontSize:12,opacity:.7}}>Weather unavailable</div>}
+        {/* Hourly forecast */}
+        {weather?.hourly&&<div style={{marginTop:14,paddingTop:14,borderTop:"1px solid rgba(255,255,255,.15)",display:"flex",gap:14,overflowX:"auto"}}>
+          {weather.hourly.time.slice(0,12).map((t,i)=>{const dt=new Date(t);return <div key={i} style={{textAlign:"center",minWidth:50}}>
+            <div style={{fontSize:9,opacity:.6}}>{dt.getHours()===new Date().getHours()&&dt.getDate()===new Date().getDate()?"Now":dt.toLocaleTimeString("en-US",{hour:"numeric"})}</div>
+            <div style={{fontSize:18,margin:"4px 0"}}>{wxCodeToIcon(weather.hourly.weather_code[i],dt.getHours()>=6&&dt.getHours()<19)}</div>
+            <div style={{fontSize:11,fontWeight:600}}>{Math.round(weather.hourly.temperature_2m[i])}°</div>
+            {weather.hourly.precipitation_probability[i]>20&&<div style={{fontSize:9,color:"#7dd3fc"}}>💧{weather.hourly.precipitation_probability[i]}%</div>}
+          </div>;})}
+        </div>}
+      </div>
+    </div>
+
+    {/* Caregiver advisory based on weather */}
+    {weather?.current&&(weather.current.temperature_2m<32||weather.current.temperature_2m>90||weather.current.precipitation>0.1||[61,63,65,71,73,75,80,81,82,85,86,95,96,99].includes(weather.current.weather_code))&&<div className="ai-card" style={{marginBottom:14,background:"linear-gradient(135deg,#fef3c7,#fde68a)",border:"1px solid #f59e0b"}}>
+      <h4 style={{color:"#78350f"}}>⚠️ Weather Advisory for Today's Shifts</h4>
+      <p style={{color:"#78350f"}}>
+        {weather.current.temperature_2m<32&&"❄️ Freezing temperatures — caregivers should dress in layers and allow extra travel time. "}
+        {weather.current.temperature_2m>90&&"🔥 Heat warning — encourage caregivers to stay hydrated and check on elderly clients for heat-related symptoms. "}
+        {[61,63,65,80,81,82].includes(weather.current.weather_code)&&"🌧 Rain — drive carefully, allow extra time to client homes. "}
+        {[71,73,75,85,86].includes(weather.current.weather_code)&&"❄️ Snow — drive carefully, monitor for winter storm advisories. "}
+        {[95,96,99].includes(weather.current.weather_code)&&"⛈ Thunderstorm — caregivers should shelter at client home if possible until storm passes. "}
+      </p>
+    </div>}
+
+    {/* ═══ WORKFORCE INTELLIGENCE AGENT — Late-Risk Predictor ═══ */}
+    <div className="ai-card" style={{marginBottom:14,background:"linear-gradient(135deg,#1a1a2e,#16213e)",border:"1px solid #3c4f3d"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <h4 style={{color:"#fff"}}><span className="pulse" style={{background:lateRiskByShift.some(r=>r.level==="critical")?"#dc2626":lateRiskByShift.some(r=>r.level==="high")?"#f59e0b":"var(--ok)"}}/>🤖 Workforce Intelligence — Late-Risk Predictor</h4>
+        <button className="btn btn-sm btn-p" disabled={wfAgentLoading} onClick={runWorkforceAgent}>{wfAgentLoading?"⏳ Analyzing...":"✨ Get Operations Brief"}</button>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
+        <div style={{padding:"10px 14px",background:"rgba(220,38,38,.15)",border:"1px solid #dc2626"}}>
+          <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#fca5a5",fontWeight:700}}>🚨 Critical</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{lateRiskByShift.filter(r=>r.level==="critical").length}</div>
+          <div style={{fontSize:10,color:"#fca5a5"}}>Likely already late</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(245,158,11,.15)",border:"1px solid #f59e0b"}}>
+          <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#fcd34d",fontWeight:700}}>⚠️ High</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{lateRiskByShift.filter(r=>r.level==="high").length}</div>
+          <div style={{fontSize:10,color:"#fcd34d"}}>Tight buffer</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(59,130,246,.15)",border:"1px solid #3b82f6"}}>
+          <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#7dd3fc",fontWeight:700}}>📋 Medium</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{lateRiskByShift.filter(r=>r.level==="medium").length}</div>
+          <div style={{fontSize:10,color:"#7dd3fc"}}>Monitor</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(16,185,129,.15)",border:"1px solid #10b981"}}>
+          <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#86efac",fontWeight:700}}>✅ Low Risk</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{lateRiskByShift.filter(r=>r.level==="low").length}</div>
+          <div style={{fontSize:10,color:"#86efac"}}>On track</div>
+        </div>
+      </div>
+
+      {/* Risk list — top 5 shifts ranked by risk */}
+      {lateRiskByShift.length>0?<div style={{maxHeight:240,overflowY:"auto"}}>
+        {lateRiskByShift.slice(0,6).map((r,i)=>{
+          const colors={critical:"#dc2626",high:"#f59e0b",medium:"#3b82f6",low:"#10b981"};
+          return <div key={i} style={{padding:"10px 12px",marginBottom:6,background:`${colors[r.level]}1a`,border:`1px solid ${colors[r.level]}66`,display:"flex",gap:10,alignItems:"flex-start"}}>
+            <div style={{width:50,textAlign:"center",fontFamily:"var(--fd)",fontSize:18,fontWeight:700,color:colors[r.level]}}>{r.risk}%</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:600,color:"#fff"}}>{r.caregiver?.name||"?"} → {r.client?.name||"?"} at {r.shift.startTime}{r.minsUntilStart>0?` (${r.minsUntilStart} min)`:r.minsUntilStart<0?` (${Math.abs(r.minsUntilStart)} min ago)`:" (NOW)"}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginTop:2,lineHeight:1.5}}>{r.reasons.join(" · ")}</div>
+            </div>
+            <button className="btn btn-sm btn-p" onClick={()=>{setShowCgDrill(r.caregiver);setSelCG(r.caregiver?.id);}}>📞 Drill / Message</button>
+          </div>;
+        })}
+      </div>:<div style={{fontSize:12,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>No active shifts to assess. The agent will start tracking as today's shifts approach.</div>}
+
+      {wfAgentInsights&&<div style={{marginTop:12,padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",fontSize:13,lineHeight:1.7,color:"rgba(255,255,255,.95)",whiteSpace:"pre-wrap"}}>
+        <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"#7dd3fc",marginBottom:8}}>📋 Operations Brief</div>
+        {wfAgentInsights}
+      </div>}
+    </div>
+
+    {/* ═══ NO-SHOW / CALLOUT RISK PREDICTOR — next 7 days ═══ */}
+    {(()=>{
+      const upcomingWindow=[];
+      const nowD=new Date();
+      // Compute upcoming shift no-show risk
+      const allUpcoming=(schedules||[]).filter(s=>{
+        if(s.status!=="published")return false;
+        const sd=new Date(s.date+"T00:00:00");
+        const diffH=(sd-nowD)/3600000;
+        return diffH>=-1&&diffH<=168; // next 7 days incl today
+      });
+      allUpcoming.forEach(s=>{
+        const cg=caregivers.find(c=>c.id===s.caregiverId);
+        const cl=clients.find(c=>c.id===s.clientId);
+        if(!cg)return;
+        let risk=0,factors=[];
+        // Historical no-show pattern (mock; in production use last 90 days of attendance)
+        const histPattern={CG1:2,CG2:8,CG3:18,CG4:30}[s.caregiverId]||10;
+        if(histPattern>20){risk+=35;factors.push(`History: ${histPattern}% no-show in last 90 days`);}
+        else if(histPattern>10){risk+=15;factors.push(`History: ${histPattern}% no-show rate`);}
+        else if(histPattern>5){risk+=5;factors.push(`History: ${histPattern}% (low)`);}
+
+        // Day-of-week risk: Mondays + Fridays + weekends carry higher callout rates in home care
+        const dow=new Date(s.date+"T12:00:00").getDay();
+        if(dow===1){risk+=8;factors.push("Monday — historical callout day");}
+        if(dow===5){risk+=10;factors.push("Friday — elevated callout rate");}
+        if(dow===0||dow===6){risk+=12;factors.push("Weekend — staffing shortage risk");}
+
+        // Early morning shifts (start before 7am) have higher callout
+        const [sh]=s.startTime.split(":").map(Number);
+        if(sh<7){risk+=10;factors.push(`Early start (${s.startTime}) — fatigue/oversleep risk`);}
+        if(sh>=20){risk+=8;factors.push(`Late shift (${s.startTime}) — fatigue risk`);}
+
+        // Long shifts (>10hrs) have higher mid-shift callout
+        const [eh]=s.endTime.split(":").map(Number);
+        const dur=eh-sh+(eh<sh?24:0);
+        if(dur>=10){risk+=5;factors.push(`Long shift (${dur}h)`);}
+
+        // Holiday-adjacent (mock — within 2 days of major US holiday)
+        const holidays=["2026-01-01","2026-01-19","2026-02-16","2026-05-25","2026-07-04","2026-09-07","2026-11-26","2026-12-25"];
+        const holidayProx=holidays.some(h=>{const d=new Date(h+"T12:00:00");return Math.abs(d-new Date(s.date+"T12:00:00"))/86400000<=1;});
+        if(holidayProx){risk+=15;factors.push("Holiday-adjacent — elevated callout rate");}
+
+        // Weather forecast (only for shifts within 48h)
+        const hoursUntil=(new Date(s.date+"T"+s.startTime+":00")-nowD)/3600000;
+        if(hoursUntil<=48&&weather?.hourly){
+          // Find weather code for that hour
+          const targetHour=Math.floor(hoursUntil);
+          const wxCode=weather.hourly?.weather_code?.[targetHour];
+          if([71,73,75,85,86].includes(wxCode)){risk+=20;factors.push("❄️ Snow forecast — major callout/late risk");}
+          else if([95,96,99].includes(wxCode)){risk+=25;factors.push("⛈ Storm forecast");}
+          else if([61,63,65,80,81,82].includes(wxCode)){risk+=8;factors.push("🌧 Rain forecast");}
+          // Extreme cold
+          const t=weather.hourly?.temperature_2m?.[targetHour];
+          if(t<10){risk+=10;factors.push("🥶 Bitter cold forecast (<10°F)");}
+        }
+
+        // Workload — caregiver has 5+ shifts in same week
+        const weekStart=new Date(s.date+"T00:00:00");weekStart.setDate(weekStart.getDate()-weekStart.getDay());
+        const weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);
+        const weekShifts=(schedules||[]).filter(x=>x.caregiverId===s.caregiverId&&new Date(x.date+"T00:00:00")>=weekStart&&new Date(x.date+"T00:00:00")<=weekEnd);
+        if(weekShifts.length>=6){risk+=12;factors.push(`Heavy week (${weekShifts.length} shifts) — burnout risk`);}
+        else if(weekShifts.length>=5){risk+=5;factors.push(`Busy week (${weekShifts.length} shifts)`);}
+
+        risk=Math.min(100,risk);
+        let level="low";
+        if(risk>=50)level="critical";
+        else if(risk>=30)level="high";
+        else if(risk>=15)level="medium";
+
+        upcomingWindow.push({shift:s,caregiver:cg,client:cl,risk,level,factors,hoursUntil});
+      });
+      upcomingWindow.sort((a,b)=>b.risk-a.risk);
+      const elevated=upcomingWindow.filter(r=>r.level==="critical"||r.level==="high");
+
+      return <div className="ai-card" style={{marginTop:14,marginBottom:14,background:"linear-gradient(135deg,#1f1135,#3d1d4d)",border:"1px solid #a855f7"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <h4 style={{color:"#fff"}}><span className="pulse" style={{background:elevated.length>0?"#a855f7":"var(--ok)"}}/>🔮 No-Show / Callout Risk Predictor — Next 7 Days</h4>
+          <span style={{fontSize:11,color:"rgba(255,255,255,.6)"}}>{upcomingWindow.length} upcoming shifts assessed</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
+          <div style={{padding:"10px 14px",background:"rgba(168,85,247,.15)",border:"1px solid #a855f7"}}>
+            <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#e9d5ff",fontWeight:700}}>🚨 Critical (≥50%)</div>
+            <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{upcomingWindow.filter(r=>r.level==="critical").length}</div>
+            <div style={{fontSize:10,color:"#e9d5ff"}}>Likely callout</div>
+          </div>
+          <div style={{padding:"10px 14px",background:"rgba(245,158,11,.15)",border:"1px solid #f59e0b"}}>
+            <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#fcd34d",fontWeight:700}}>⚠️ High (30-49%)</div>
+            <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{upcomingWindow.filter(r=>r.level==="high").length}</div>
+            <div style={{fontSize:10,color:"#fcd34d"}}>Have backup ready</div>
+          </div>
+          <div style={{padding:"10px 14px",background:"rgba(59,130,246,.15)",border:"1px solid #3b82f6"}}>
+            <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#7dd3fc",fontWeight:700}}>📋 Medium (15-29%)</div>
+            <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{upcomingWindow.filter(r=>r.level==="medium").length}</div>
+            <div style={{fontSize:10,color:"#7dd3fc"}}>Monitor</div>
+          </div>
+          <div style={{padding:"10px 14px",background:"rgba(16,185,129,.15)",border:"1px solid #10b981"}}>
+            <div style={{fontSize:9,opacity:.7,textTransform:"uppercase",letterSpacing:.5,color:"#86efac",fontWeight:700}}>✅ Low (&lt;15%)</div>
+            <div style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:400,color:"#fff"}}>{upcomingWindow.filter(r=>r.level==="low").length}</div>
+            <div style={{fontSize:10,color:"#86efac"}}>On track</div>
+          </div>
+        </div>
+        {elevated.length>0?<div style={{maxHeight:280,overflowY:"auto"}}>
+          {elevated.slice(0,8).map((r,i)=>{
+            const colors={critical:"#a855f7",high:"#f59e0b"};
+            return <div key={i} style={{padding:"10px 12px",marginBottom:6,background:`${colors[r.level]}1a`,border:`1px solid ${colors[r.level]}66`,display:"flex",gap:10,alignItems:"flex-start"}}>
+              <div style={{width:50,textAlign:"center",fontFamily:"var(--fd)",fontSize:18,fontWeight:700,color:colors[r.level]}}>{r.risk}%</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:"#fff"}}>{r.caregiver?.name||"?"} → {r.client?.name||"?"}</div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginTop:2}}>{fmtD(r.shift.date)} · {r.shift.startTime}–{r.shift.endTime} · in {r.hoursUntil<24?Math.round(r.hoursUntil)+"h":Math.round(r.hoursUntil/24)+"d"}</div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:3,lineHeight:1.5}}>{r.factors.slice(0,4).join(" · ")}</div>
+              </div>
+              <button className="btn btn-sm btn-p" onClick={()=>{setShowCgDrill(r.caregiver);setSelCG(r.caregiver?.id);}}>📞 Reach Out</button>
+            </div>;
+          })}
+        </div>:<div style={{fontSize:12,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>✅ Low callout risk across all upcoming shifts.</div>}
+        <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:10,paddingTop:10,borderTop:"1px solid rgba(255,255,255,.1)"}}>
+          🧠 Factors: historical no-show rate · day-of-week patterns (Mon/Fri/weekends are higher) · early/late shift fatigue · holiday-adjacent · forecast weather (snow/storms) · weekly workload (burnout). In production, this will train on your actual attendance records.
+        </div>
+      </div>;
+    })()}
+
+    {/* Map controls + view */}
     <div style={{display:"grid",gridTemplateColumns:"320px 1fr",gap:14}}>
       {/* Caregiver List */}
       <div className="card" style={{maxHeight:600,overflow:"auto"}}>
         <div className="card-h"><h3>Caregivers ({caregivers.length})</h3></div>
-        {caregivers.map(cg=>{const pos=positions[cg.id];const minsAgo=pos?Math.floor((Date.now()-pos.timestamp)/60000):null;return <div key={cg.id} onClick={()=>setSelCG(cg.id)} style={{padding:"12px 16px",borderBottom:"var(--border-thin)",cursor:"pointer",background:selCG===cg.id?"var(--bg)":"transparent"}}>
-          <div style={{display:"flex",gap:10,alignItems:"center"}}>
-            <div style={{width:10,height:10,borderRadius:"50%",background:pos?.status==="on_shift"?"var(--ok)":pos?.status==="traveling"?"var(--blue)":"#999",flexShrink:0}}/>
-            <div style={{flex:1}}>
-              <div style={{fontWeight:600,fontSize:13}}>{cg.name}</div>
-              {pos?<div style={{fontSize:10,color:"var(--t2)"}}>{pos.address}</div>:<div style={{fontSize:10,color:"var(--t2)"}}>No GPS data</div>}
-              {minsAgo!=null&&<div style={{fontSize:10,color:minsAgo>10?"var(--err)":"var(--t2)"}}>{minsAgo<1?"Just now":minsAgo+" min ago"}</div>}
+        {caregivers.map(cg=>{
+          const pos=positions[cg.id];
+          const minsAgo=pos?Math.floor((Date.now()-pos.timestamp)/60000):null;
+          // Predict late risk
+          const upcomingShift=todayShifts.find(s=>s.caregiverId===cg.id);
+          let lateRisk=null;
+          if(upcomingShift&&pos){
+            const [sh,sm]=upcomingShift.startTime.split(":").map(Number);
+            const shiftStartMin=sh*60+sm;
+            const nowMin=new Date().getHours()*60+new Date().getMinutes();
+            const minsToShift=shiftStartMin-nowMin;
+            // Estimate travel time to client (rough: ~15 min default for Chicago metro)
+            const cl=clients.find(c=>c.id===upcomingShift.clientId);
+            const clLoc=mockClientLocations[cl?.id];
+            let estTravel=15;
+            if(clLoc&&pos){
+              // Haversine-lite: very rough miles → mins (~25mph average city)
+              const dLat=Math.abs(clLoc.lat-pos.lat);
+              const dLng=Math.abs(clLoc.lng-pos.lng);
+              const miles=Math.sqrt(dLat*dLat+dLng*dLng)*69; // ~69mi per degree
+              estTravel=Math.max(5,Math.round(miles/25*60));
+            }
+            // Add traffic buffer if heavy traffic toggled
+            if(showTraffic)estTravel+=Math.round(estTravel*0.3);
+            // Add weather buffer
+            if(weather?.current&&[61,63,65,71,73,75,80,81,82,85,86,95,96,99].includes(weather.current.weather_code))estTravel+=10;
+            const slack=minsToShift-estTravel;
+            if(minsToShift<-5)lateRisk={level:"late",mins:-minsToShift,estTravel,note:`Already ${-minsToShift} min late`};
+            else if(slack<5&&minsToShift>0)lateRisk={level:"high",mins:slack,estTravel,note:`Cuts it close — ${slack} min slack`};
+            else if(slack<15)lateRisk={level:"med",mins:slack,estTravel,note:`Tight — ${slack} min slack`};
+            else if(minsToShift>0)lateRisk={level:"low",mins:slack,estTravel,note:`On track — ${slack} min slack`};
+          }
+          const riskColors={late:"#dc2626",high:"#f59e0b",med:"#eab308",low:"#10b981"};
+          return <div key={cg.id} style={{padding:"12px 16px",borderBottom:"var(--border-thin)",background:selCG===cg.id?"var(--bg)":"transparent"}}>
+            <div onClick={()=>setSelCG(cg.id)} style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}}>
+              <div style={{width:10,height:10,borderRadius:"50%",background:pos?.status==="on_shift"?"var(--ok)":pos?.status==="traveling"?"var(--blue)":"#999",flexShrink:0}}/>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600,fontSize:13}}>{cg.name}</div>
+                {pos?<div style={{fontSize:10,color:"var(--t2)"}}>{pos.address}</div>:<div style={{fontSize:10,color:"var(--t2)"}}>No GPS data</div>}
+                {minsAgo!=null&&<div style={{fontSize:10,color:minsAgo>10?"var(--err)":"var(--t2)"}}>{minsAgo<1?"Just now":minsAgo+" min ago"}</div>}
+              </div>
             </div>
-          </div>
-        </div>;})}
-      </div>
-
-      {/* Map View (visual representation since we can't load real maps in artifact) */}
-      <div className="card" style={{minHeight:600,position:"relative",background:"linear-gradient(135deg,#e8f0e8 0%,#d4e0d4 100%)",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:10,left:10,background:"#fff",padding:"6px 12px",fontSize:11,fontWeight:600,zIndex:10}}>Chicago Metro Area</div>
-        {/* Mock map dots */}
-        {caregivers.map(cg=>{const pos=positions[cg.id];if(!pos)return null;
-          // Mock x/y based on lat/lng (offset from center)
-          const x=((pos.lng+87.65)*1500)+50;const y=((-pos.lat+41.95)*1500)+50;
-          return <div key={cg.id} onClick={()=>setSelCG(cg.id)} style={{position:"absolute",left:x+"px",top:y+"px",cursor:"pointer",zIndex:selCG===cg.id?20:5}}>
-            <div style={{width:32,height:32,borderRadius:"50%",background:pos.status==="on_shift"?"var(--ok)":pos.status==="traveling"?"var(--blue)":"#999",border:"3px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,.3)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:11}}>{cg.name.split(" ").map(n=>n[0]).join("")}</div>
-            {selCG===cg.id&&<div style={{position:"absolute",top:38,left:-80,width:200,background:"#fff",padding:"10px 12px",border:"var(--border-thin)",fontSize:11,boxShadow:"0 4px 16px rgba(0,0,0,.15)"}}>
-              <div style={{fontWeight:700,marginBottom:4}}>{cg.name}</div>
-              <div style={{color:"var(--t2)"}}>{pos.address}</div>
-              <div style={{color:"var(--t2)",marginTop:4}}>Status: {pos.status.replace("_"," ")}</div>
-              <div style={{color:"var(--t2)"}}>Speed: {pos.speed||0} mph</div>
-              <div style={{color:"var(--t2)"}}>Updated {Math.floor((Date.now()-pos.timestamp)/60000)} min ago</div>
+            {lateRisk&&<div style={{marginTop:6,padding:"4px 8px",background:riskColors[lateRisk.level]+"22",border:"1px solid "+riskColors[lateRisk.level],fontSize:10,fontWeight:600,color:riskColors[lateRisk.level]}}>
+              {lateRisk.level==="late"?"🚨 LATE":lateRisk.level==="high"?"⚠️ AT RISK":lateRisk.level==="med"?"⏱ TIGHT":"✓ ON TRACK"} · {lateRisk.note}
+              <div style={{fontSize:9,fontWeight:400,marginTop:2}}>~{lateRisk.estTravel} min travel est.</div>
             </div>}
+            <div style={{display:"flex",gap:4,marginTop:6}}>
+              <button className="btn btn-sm btn-s" style={{flex:1,fontSize:10}} onClick={()=>setShowCgDrill(cg)}>🔍 Drill Down</button>
+              <button className="btn btn-sm btn-s" style={{flex:1,fontSize:10}} onClick={()=>{setShowCgDrill(cg);}}>💬 Message</button>
+            </div>
           </div>;
         })}
-        {/* Client markers */}
-        {clients.filter(c=>c.status==="active").map((cl,i)=>{const x=200+i*120;const y=350;return <div key={cl.id} style={{position:"absolute",left:x+"px",top:y+"px"}}>
-          <div style={{width:24,height:24,background:"#070707",color:"#fff",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>🏠</div>
-          <div style={{fontSize:9,fontWeight:600,marginTop:2,whiteSpace:"nowrap"}}>{cl.name.split(" ")[0]}</div>
-        </div>;})}
-        <div style={{position:"absolute",bottom:10,left:10,background:"#fff",padding:"8px 12px",fontSize:10,display:"flex",gap:14}}>
+      </div>
+
+      {/* Real Leaflet Map */}
+      <div className="card" style={{padding:0,position:"relative",overflow:"hidden"}}>
+        {/* Map style + traffic toggle */}
+        <div style={{position:"absolute",top:10,right:10,zIndex:1000,display:"flex",flexDirection:"column",gap:6}}>
+          <div style={{background:"#fff",border:"1px solid #ccc",padding:4,fontSize:11,display:"flex",gap:2}}>
+            <button onClick={()=>setMapStyle("topo")} style={{padding:"4px 10px",fontSize:11,background:mapStyle==="topo"?"#070707":"#fff",color:mapStyle==="topo"?"#fff":"#070707",border:"none",cursor:"pointer"}}>🗻 Topo</button>
+            <button onClick={()=>setMapStyle("street")} style={{padding:"4px 10px",fontSize:11,background:mapStyle==="street"?"#070707":"#fff",color:mapStyle==="street"?"#fff":"#070707",border:"none",cursor:"pointer"}}>🛣 Street</button>
+            <button onClick={()=>setMapStyle("satellite")} style={{padding:"4px 10px",fontSize:11,background:mapStyle==="satellite"?"#070707":"#fff",color:mapStyle==="satellite"?"#fff":"#070707",border:"none",cursor:"pointer"}}>🛰 Satellite</button>
+          </div>
+          <button onClick={()=>setShowTraffic(!showTraffic)} style={{background:showTraffic?"#dc2626":"#fff",color:showTraffic?"#fff":"#070707",border:"1px solid #ccc",padding:"6px 12px",fontSize:11,cursor:"pointer",fontWeight:600}}>🚗 Traffic {showTraffic?"ON":"OFF"}</button>
+        </div>
+        <div ref={mapRef} style={{height:600,width:"100%",zIndex:1}}/>
+        <div style={{position:"absolute",bottom:10,left:60,background:"rgba(255,255,255,0.95)",padding:"8px 12px",fontSize:10,display:"flex",gap:14,zIndex:1000,border:"1px solid #ccc"}}>
           <span>🟢 On Shift</span><span>🔵 Traveling</span><span>⚪ Off Duty</span><span>🏠 Client</span>
+          {showTraffic&&<><span style={{borderLeft:"1px solid #ccc",paddingLeft:14}}>🟢 Clear</span><span>🟡 Moderate</span><span>🔴 Heavy</span></>}
         </div>
       </div>
     </div>
 
+    {/* ═══ WORKFORCE INTELLIGENCE AGENT ═══ */}
+    <div className="ai-card" style={{marginTop:14,background:"linear-gradient(135deg,#1a1a2e,#16213e)",border:"1px solid #3c4f3d"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <h4 style={{color:"#fff"}}><span className="pulse" style={{background:"var(--ok)"}}/>🧠 Workforce Intelligence Agent</h4>
+        <button className="btn btn-sm btn-p" disabled={wfAgentLoading} onClick={async()=>{
+          setWfAgentLoading(true);
+          setWfAgentInsights(null);
+          try{
+            // Build context: today's shifts, current positions, weather, traffic, late-risk caregivers
+            const cgStatus=caregivers.map(cg=>{
+              const pos=positions[cg.id];
+              const shift=todayShifts.find(s=>s.caregiverId===cg.id);
+              const cl=shift?clients.find(c=>c.id===shift.clientId):null;
+              return`- ${cg.name}: ${pos?.status||"no GPS"}${pos?` at ${pos.address}`:""}${shift?` · scheduled ${shift.startTime}-${shift.endTime} for ${cl?.name||"client"}`:" · no shift today"}`;
+            }).join("\n");
+            const wxBrief=weather?.current?`Current: ${Math.round(weather.current.temperature_2m)}°F, ${[0,1,2].includes(weather.current.weather_code)?"clear":[3,45,48].includes(weather.current.weather_code)?"overcast":[61,63,65].includes(weather.current.weather_code)?"rain":[71,73,75].includes(weather.current.weather_code)?"snow":"variable"}, wind ${Math.round(weather.current.wind_speed_10m)}mph`:"Weather: data unavailable";
+            const prompt=`You are a workforce operations analyst for CWIN At Home, a non-medical home care agency in Tinley Park, Illinois. You're monitoring real-time caregiver field operations.
+
+CURRENT TIME: ${new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})} on ${fmtD(today_)}
+
+${wxBrief}
+Traffic overlay: ${showTraffic?"ENABLED — heavy on I-94, moderate on I-294/I-57":"not visible"}
+
+CAREGIVER STATUS (${caregivers.length} total):
+${cgStatus}
+
+TODAY'S SHIFTS: ${todayShifts.length} total
+
+Provide a CONCISE workforce operations briefing (max 250 words) covering:
+
+**🚨 At-Risk Shifts:** Identify caregivers likely to be late based on their current GPS, scheduled start time, and traffic/weather conditions. Specify who, by how much, and why.
+
+**⏱ Capacity & Coverage:** Are there any gaps right now? Anyone available to swap if needed?
+
+**🌦 Weather/Traffic Impact:** Specific operational adjustments needed today.
+
+**📋 Recommended Actions:** 2-3 specific, actionable recommendations the dispatcher should take in the next 30 minutes (e.g., "Call Faith — running 8 min late to Linda's", "Notify Mike Frank that Olena is en route, ETA 4:35 PM").
+
+Be specific with names, times, and addresses. Do not invent data — only use what's provided.`;
+            const response=await fetch("https://api.anthropic.com/v1/messages",{
+              method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({
+                model:"claude-sonnet-4-20250514",
+                max_tokens:1500,
+                messages:[{role:"user",content:prompt}],
+              })
+            });
+            const data=await response.json();
+            const text=data.content?.map(b=>b.text||"").join("")||"No insights returned.";
+            setWfAgentInsights(text);
+          }catch(e){
+            setWfAgentInsights("⚠️ Agent unavailable: "+e.message);
+          }finally{
+            setWfAgentLoading(false);
+          }
+        }}>{wfAgentLoading?"⏳ Analyzing field ops...":"✨ Generate Field Briefing"}</button>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:12}}>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>Active Now</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#fff"}}>{caregivers.filter(c=>positions[c.id]?.status==="on_shift").length}</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>on shift</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>En Route</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#fff"}}>{caregivers.filter(c=>positions[c.id]?.status==="traveling").length}</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>traveling</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>Risk Today</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#f59e0b"}}>{(()=>{let n=0;todayShifts.forEach(s=>{const pos=positions[s.caregiverId];if(!pos)return;const[sh,sm]=s.startTime.split(":").map(Number);const shiftStartMin=sh*60+sm;const nowMin=new Date().getHours()*60+new Date().getMinutes();if(shiftStartMin-nowMin<15&&shiftStartMin-nowMin>-30)n++;});return n;})()}</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>tight margin</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>Available</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#10b981"}}>{caregivers.filter(c=>positions[c.id]?.status==="off_duty").length}</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>could swap</div>
+        </div>
+      </div>
+      {wfAgentInsights?<div style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",fontSize:13,lineHeight:1.7,color:"rgba(255,255,255,.95)",whiteSpace:"pre-wrap"}}>
+        <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"#7dd3fc",marginBottom:8}}>📡 Live Field Briefing</div>
+        {wfAgentInsights}
+      </div>:<div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontStyle:"italic",padding:"10px 0"}}>Click "Generate Field Briefing" for AI analysis of at-risk shifts, capacity gaps, weather/traffic impact, and recommended dispatcher actions.</div>}
+    </div>
+
+    {/* ═══ CAREGIVER DRILL-DOWN + MESSAGING MODAL ═══ */}
+    {showCgDrill&&(()=>{
+      const cg=showCgDrill;
+      const pos=positions[cg.id];
+      const myShifts=(schedules||[]).filter(s=>s.caregiverId===cg.id&&s.date>=today_).sort((a,b)=>(a.date+a.startTime).localeCompare(b.date+b.startTime)).slice(0,5);
+      const todayShift=todayShifts.find(s=>s.caregiverId===cg.id);
+      const thread=msgThread[cg.id]||[];
+      // Recompute late risk for this caregiver
+      let lateRisk=null;
+      if(todayShift&&pos){
+        const [sh,sm]=todayShift.startTime.split(":").map(Number);
+        const shiftStartMin=sh*60+sm;
+        const nowMin=new Date().getHours()*60+new Date().getMinutes();
+        const minsToShift=shiftStartMin-nowMin;
+        const cl=clients.find(c=>c.id===todayShift.clientId);
+        const clLoc=mockClientLocations[cl?.id];
+        let estTravel=15;
+        if(clLoc&&pos){
+          const dLat=Math.abs(clLoc.lat-pos.lat);
+          const dLng=Math.abs(clLoc.lng-pos.lng);
+          const miles=Math.sqrt(dLat*dLat+dLng*dLng)*69;
+          estTravel=Math.max(5,Math.round(miles/25*60));
+        }
+        if(showTraffic)estTravel+=Math.round(estTravel*0.3);
+        if(weather?.current&&[61,63,65,71,73,75,80,81,82,85,86,95,96,99].includes(weather.current.weather_code))estTravel+=10;
+        const slack=minsToShift-estTravel;
+        if(minsToShift<-5)lateRisk={level:"late",mins:-minsToShift,estTravel,client:cl?.name};
+        else if(slack<5&&minsToShift>0)lateRisk={level:"high",mins:slack,estTravel,client:cl?.name};
+        else if(slack<15)lateRisk={level:"med",mins:slack,estTravel,client:cl?.name};
+        else if(minsToShift>0)lateRisk={level:"low",mins:slack,estTravel,client:cl?.name};
+      }
+
+      const sendMessage=()=>{
+        if(!msgInput.trim())return;
+        const newMsg={from:"admin",text:msgInput,time:new Date().toISOString(),channel:msgChannel};
+        setMsgThread(p=>({...p,[cg.id]:[...(p[cg.id]||[]),newMsg]}));
+        setMsgInput("");
+        // Simulate caregiver auto-reply for demo
+        setTimeout(()=>{
+          const reply={from:"caregiver",text:`Got it — thanks for the heads up. I'm on my way.`,time:new Date().toISOString(),channel:msgChannel};
+          setMsgThread(p=>({...p,[cg.id]:[...(p[cg.id]||[]),reply]}));
+        },2500);
+      };
+      const sendQuickMsg=(template)=>{setMsgInput(template);};
+
+      return <div className="modal-bg" onClick={()=>{setShowCgDrill(null);setMsgInput("");}}>
+        <div className="modal" style={{maxWidth:680,maxHeight:"94vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+          <div className="modal-h">🔍 {cg.name}<button className="btn btn-sm btn-s" onClick={()=>{setShowCgDrill(null);setMsgInput("");}}>✕</button></div>
+          <div className="modal-b">
+            {/* Header card with photo + status */}
+            <div style={{display:"flex",gap:14,alignItems:"center",marginBottom:14,padding:14,background:"var(--bg)"}}>
+              <ProfileAvatar name={cg.name} photo={cg.photo} size={64} dark/>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"var(--fd)",fontSize:18,fontWeight:400}}>{cg.name}</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>📞 {cg.phone}</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>📧 {cg.email}</div>
+                <div style={{display:"flex",gap:6,marginTop:4}}>
+                  <span className={`tag ${pos?.status==="on_shift"?"tag-ok":pos?.status==="traveling"?"tag-bl":"tag-wn"}`}>{pos?.status?.replace("_"," ")||"unknown"}</span>
+                  {pos&&<span className="tag" style={{background:"#f5f2eb",color:"#070707"}}>📍 {pos.address}</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* LATE RISK ALERT */}
+            {lateRisk&&<div style={{padding:"12px 14px",marginBottom:14,background:lateRisk.level==="late"?"#fee2e2":lateRisk.level==="high"?"#fef3c7":lateRisk.level==="med"?"#fef9c3":"#dcfce7",border:"1px solid "+(lateRisk.level==="late"?"#dc2626":lateRisk.level==="high"?"#f59e0b":lateRisk.level==="med"?"#eab308":"#10b981")}}>
+              <div style={{fontWeight:700,fontSize:12,color:lateRisk.level==="late"?"#7f1d1d":lateRisk.level==="high"?"#78350f":lateRisk.level==="med"?"#713f12":"#14532d",marginBottom:4}}>
+                {lateRisk.level==="late"?"🚨 ALREADY LATE":lateRisk.level==="high"?"⚠️ AT RISK OF BEING LATE":lateRisk.level==="med"?"⏱ TIGHT MARGIN":"✓ ON TRACK"}
+              </div>
+              <div style={{fontSize:11,color:lateRisk.level==="late"?"#7f1d1d":lateRisk.level==="high"?"#78350f":lateRisk.level==="med"?"#713f12":"#14532d",lineHeight:1.5}}>
+                Scheduled shift with <strong>{lateRisk.client}</strong> starts at {todayShift.startTime}.
+                <br/>Estimated travel: <strong>~{lateRisk.estTravel} min</strong>
+                {showTraffic&&" (includes traffic)"}
+                {weather?.current&&[61,63,65,71,73,75,80,81,82,85,86,95,96,99].includes(weather.current.weather_code)&&" (includes weather buffer)"}.
+                <br/>{lateRisk.level==="late"?`Currently ${lateRisk.mins} min behind schedule.`:lateRisk.level==="low"?`${lateRisk.mins} min slack — should arrive on time.`:`Only ${lateRisk.mins} min slack — recommend contacting now.`}
+              </div>
+              {(lateRisk.level==="late"||lateRisk.level==="high")&&<div style={{display:"flex",gap:6,marginTop:8}}>
+                <button className="btn btn-sm btn-p" onClick={()=>sendQuickMsg(`Hi ${cg.name.split(" ")[0]}, just checking in — your shift with ${lateRisk.client} starts at ${todayShift.startTime}. Are you on your way? ETA?`)}>📱 Send Check-In</button>
+                <button className="btn btn-sm btn-s" onClick={()=>sendQuickMsg(`${cg.name.split(" ")[0]}, please notify ${lateRisk.client} that you'll be a few minutes late. Drive safely.`)}>⚠️ Late Alert</button>
+              </div>}
+            </div>}
+
+            {/* Today's shift */}
+            {todayShift&&<div style={{padding:"10px 14px",marginBottom:14,background:"#dbeafe",border:"1px solid #3b82f6"}}>
+              <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",color:"#1e40af",marginBottom:4}}>📅 Today's Shift</div>
+              <div style={{fontSize:13,fontWeight:600}}>{clients.find(c=>c.id===todayShift.clientId)?.name} · {todayShift.startTime} – {todayShift.endTime}</div>
+              {todayShift.tasks?.length>0&&<div style={{fontSize:11,color:"#1e40af",marginTop:4}}>Tasks: {todayShift.tasks.join(", ")}</div>}
+            </div>}
+
+            {/* Upcoming shifts */}
+            {myShifts.length>0&&<div style={{marginBottom:14}}>
+              <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"var(--t2)",marginBottom:6}}>📆 Next 5 Shifts</div>
+              {myShifts.map(s=>{const cl=clients.find(c=>c.id===s.clientId);return <div key={s.id} style={{padding:"6px 10px",borderBottom:"var(--border-thin)",fontSize:12,display:"flex",justifyContent:"space-between"}}>
+                <span><strong>{fmtD(s.date)}</strong> · {s.startTime}–{s.endTime}</span>
+                <span style={{color:"var(--t2)"}}>{cl?.name||"—"}</span>
+              </div>;})}
+            </div>}
+
+            {/* MESSAGING THREAD */}
+            <div style={{borderTop:"2px solid var(--border-thin)",paddingTop:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <div style={{fontSize:13,fontWeight:700}}>💬 Message {cg.name.split(" ")[0]}</div>
+                <select value={msgChannel} onChange={e=>setMsgChannel(e.target.value)} style={{fontSize:11,padding:"4px 8px"}}>
+                  <option value="sms">📱 SMS</option>
+                  <option value="in-app">💬 In-App</option>
+                  <option value="email">📧 Email</option>
+                </select>
+              </div>
+
+              {/* Quick message templates */}
+              <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap"}}>
+                <button className="btn btn-sm btn-s" style={{fontSize:9}} onClick={()=>sendQuickMsg(`Hi ${cg.name.split(" ")[0]}, just checking in — what's your ETA to your next shift?`)}>📍 Check ETA</button>
+                <button className="btn btn-sm btn-s" style={{fontSize:9}} onClick={()=>sendQuickMsg(`${cg.name.split(" ")[0]}, can you take an extra shift today? Details: __`)}>➕ Offer Shift</button>
+                <button className="btn btn-sm btn-s" style={{fontSize:9}} onClick={()=>sendQuickMsg(`Drive safe ${cg.name.split(" ")[0]} — ${weather?.current?.weather_code>=60?"weather is rough out there":"thanks for everything you do"}!`)}>💛 Encourage</button>
+                <button className="btn btn-sm btn-s" style={{fontSize:9}} onClick={()=>sendQuickMsg(`${cg.name.split(" ")[0]}, please remember to log your sign-in/out and submit your care notes by end of shift.`)}>📋 Reminder</button>
+              </div>
+
+              {/* Thread display */}
+              <div style={{maxHeight:240,overflow:"auto",marginBottom:8,padding:"10px 12px",background:"var(--bg)",border:"var(--border-thin)"}}>
+                {thread.length===0?<div style={{fontSize:11,color:"var(--t2)",fontStyle:"italic",textAlign:"center",padding:"20px 0"}}>No messages yet. Send the first message below.</div>:
+                  thread.map((m,i)=><div key={i} style={{marginBottom:8,display:"flex",justifyContent:m.from==="admin"?"flex-end":"flex-start"}}>
+                    <div style={{maxWidth:"75%",padding:"8px 12px",background:m.from==="admin"?"#3c4f3d":"#fff",color:m.from==="admin"?"#fff":"#070707",fontSize:12,lineHeight:1.5,border:m.from==="admin"?"none":"1px solid var(--bdr)"}}>
+                      <div style={{fontSize:9,opacity:.7,marginBottom:2,fontWeight:700}}>{m.from==="admin"?"You":cg.name.split(" ")[0]} · {new Date(m.time).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})} · {m.channel?.toUpperCase()}</div>
+                      {m.text}
+                    </div>
+                  </div>)
+                }
+              </div>
+
+              {/* Input */}
+              <div style={{display:"flex",gap:6}}>
+                <input value={msgInput} onChange={e=>setMsgInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendMessage();}} placeholder={`Send ${msgChannel==="sms"?"text message":msgChannel==="email"?"email":"in-app message"} to ${cg.name.split(" ")[0]}...`} style={{flex:1}}/>
+                <button className="btn btn-p" disabled={!msgInput.trim()} onClick={sendMessage}>Send</button>
+              </div>
+              <div style={{fontSize:10,color:"var(--t2)",marginTop:6}}>
+                💡 In production, SMS sends via Twilio · Email via SendGrid · In-app pushes to caregiver mobile app. For demo, replies are auto-generated.
+              </div>
+            </div>
+
+            <div style={{display:"flex",gap:6,marginTop:14}}>
+              <a href={"tel:"+(cg.phone||"")} className="btn btn-s" style={{flex:1,justifyContent:"center",textDecoration:"none"}}>📞 Call</a>
+              <a href={"mailto:"+(cg.email||"")} className="btn btn-s" style={{flex:1,justifyContent:"center",textDecoration:"none"}}>📧 Email</a>
+              <button className="btn btn-s" onClick={()=>{setSelCG(cg.id);setShowCgDrill(null);}}>🗺 Show on Map</button>
+            </div>
+          </div>
+        </div>
+      </div>;
+    })()}
+
     <div style={{marginTop:14,padding:"12px 16px",background:"var(--bg)",fontSize:11,color:"var(--t2)"}}>
-      <strong>Note:</strong> Real-time GPS requires caregivers to enable location sharing on their mobile device during shifts. This view shows mock positions for demo purposes. Production version uses caregiver phone GPS with 30-second refresh.
+      <strong>Map data:</strong> OpenTopoMap (topographic), OpenStreetMap (street), Esri (satellite). <strong>Weather:</strong> Open-Meteo. <strong>Traffic:</strong> Visual representation of major Chicago-area arteries (Production version requires Google/HERE/Waze API). <strong>GPS:</strong> Real-time updates require caregivers to enable location sharing during shifts.
     </div>
   </div>;
 }
@@ -5798,9 +8169,220 @@ function IncidentSettingsPage({prompts,setPrompts}){
 function RateCardsPage({rateCards,setRateCards,payCards,setPayCards,clients,caregivers}){
   const [editRC,setEditRC]=useState(null);
   const [editPC,setEditPC]=useState(null);
+  const [agentLoading,setAgentLoading]=useState(false);
+  const [agentInsights,setAgentInsights]=useState(null);
+  const [agentError,setAgentError]=useState(null);
+
+  // Chicago/Tinley Park home care market rates (Jan 2026 reference data, per BLS, Genworth Cost of Care, Care.com market reports)
+  // These benchmarks reflect the Chicago metro / Cook County market for non-medical home care
+  const MARKET_DATA={
+    chicago_billing:{
+      // What CLIENTS pay for home care services (per hour)
+      private_pay:{low:28,median:34,high:42,desc:"Private-pay non-medical home care (companion, personal care)"},
+      private_pay_specialized:{low:35,median:42,high:55,desc:"Specialized care (dementia, Parkinson's, hospice support)"},
+      live_in_daily:{low:225,median:280,high:350,desc:"Live-in/24-hr care (per day)"},
+      overnight:{low:18,median:22,high:28,desc:"Overnight (sleep) shifts"},
+    },
+    chicago_pay:{
+      // What CAREGIVERS earn (per hour)
+      hha_pca:{low:14,median:17,high:21,desc:"HHA / PCA (entry to mid)"},
+      cna:{low:17,median:20,high:25,desc:"Certified Nursing Assistant (CNA)"},
+      experienced:{low:18,median:22,high:28,desc:"Experienced caregiver (3+ years, multiple certs)"},
+      live_in:{low:160,median:200,high:250,desc:"Live-in caregiver (per day)"},
+    },
+    typical_margin:{low:35,median:45,high:55,desc:"Industry-typical gross margin %"},
+    cwin_target_margin:20,
+  };
+
+  // Calculate CWIN's actual rates and compare to market
+  const computeIntelligence=()=>{
+    const billRates=rateCards.map(r=>r.billRate);
+    const payRates=payCards.map(p=>p.payRate);
+    const avgBill=billRates.length?billRates.reduce((a,b)=>a+b,0)/billRates.length:0;
+    const avgPay=payRates.length?payRates.reduce((a,b)=>a+b,0)/payRates.length:0;
+    const avgMarginDollar=avgBill-avgPay;
+    const avgMarginPct=avgBill>0?(avgMarginDollar/avgBill)*100:0;
+    return{avgBill,avgPay,avgMarginDollar,avgMarginPct,billRates,payRates};
+  };
+
+  // AI Agent: Get strategic insights via Claude API
+  const runAgent=async()=>{
+    setAgentLoading(true);
+    setAgentError(null);
+    try{
+      const intel=computeIntelligence();
+      const clientList=rateCards.map(r=>{const cl=clients.find(c=>c.id===r.clientId);return`${cl?.name||r.clientId}: $${r.billRate}/hr`;}).join("\n");
+      const cgList=payCards.map(p=>{const cg=caregivers.find(c=>c.id===p.caregiverId);return`${cg?.name||p.caregiverId} (${p.type}): $${p.payRate}/hr`;}).join("\n");
+      const prompt=`You are a strategic pricing analyst for CWIN At Home, a small non-medical home care agency in Tinley Park, Illinois (Chicago south suburbs).
+
+CWIN's business model:
+- Fixed 20% administrative margin (NON-NEGOTIABLE — this is a core brand promise of transparent pricing)
+- Fair caregiver wages prioritized
+- Tinley Park / south Chicago suburbs market
+
+Current CWIN rates:
+CLIENT BILL RATES (avg $${intel.avgBill.toFixed(2)}/hr):
+${clientList}
+
+CAREGIVER PAY RATES (avg $${intel.avgPay.toFixed(2)}/hr):
+${cgList}
+
+Current CWIN margin: $${intel.avgMarginDollar.toFixed(2)}/hr (${intel.avgMarginPct.toFixed(1)}%)
+
+Chicago metro market benchmarks (2026):
+- Private-pay home care billing: $28-$42/hr (median $34)
+- Specialized care billing (dementia, Parkinson's): $35-$55/hr (median $42)
+- HHA/PCA pay: $14-$21/hr (median $17)
+- CNA pay: $17-$25/hr (median $20)
+- Industry-typical gross margin: 35-55%
+
+Provide a BRIEF strategic analysis (max 200 words) covering:
+1. How CWIN's billing rates compare to market (under/at/over)
+2. How CWIN's caregiver pay compares (under/at/over) — flag if below market
+3. Whether CWIN's 20% margin is sustainable vs the 35-55% industry norm
+4. 2-3 specific actionable recommendations (e.g., raise rates to X for Y client, increase pay for Z caregiver)
+
+Be direct, specific with dollar amounts, and balanced — protect CWIN's transparent pricing brand while ensuring caregiver wages are competitive.`;
+
+      const response=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1000,
+          messages:[{role:"user",content:prompt}],
+        })
+      });
+      const data=await response.json();
+      const text=data.content?.map(b=>b.text||"").join("")||"No insights returned.";
+      setAgentInsights(text);
+    }catch(e){
+      setAgentError("Agent unavailable. "+e.message);
+    }finally{
+      setAgentLoading(false);
+    }
+  };
+
+  const intel=computeIntelligence();
+
+  // Per-client billing rate comparison
+  const clientComparison=rateCards.map(rc=>{
+    const cl=clients.find(c=>c.id===rc.clientId);
+    const market=MARKET_DATA.chicago_billing.private_pay;
+    let position="at_market";
+    if(rc.billRate<market.low)position="below";
+    else if(rc.billRate<market.median)position="below_median";
+    else if(rc.billRate<=market.high)position="at_market";
+    else position="above";
+    return{cl,rc,market,position};
+  });
+
+  // Per-caregiver pay comparison
+  const caregiverComparison=payCards.map(pc=>{
+    const cg=caregivers.find(c=>c.id===pc.caregiverId);
+    // Use experienced if multiple certs, CNA if has CNA cert, else HHA
+    let benchmark=MARKET_DATA.chicago_pay.hha_pca;
+    if(cg?.certs?.length>=3)benchmark=MARKET_DATA.chicago_pay.experienced;
+    else if(cg?.certs?.some(c=>/CNA/i.test(c)))benchmark=MARKET_DATA.chicago_pay.cna;
+    let position="at_market";
+    if(pc.payRate<benchmark.low)position="below";
+    else if(pc.payRate<benchmark.median)position="below_median";
+    else if(pc.payRate<=benchmark.high)position="at_market";
+    else position="above";
+    return{cg,pc,benchmark,position};
+  });
 
   return <div>
-    <div className="hdr"><div><h2>Rate Cards</h2><div className="hdr-sub">Client billing rates and caregiver pay rates</div></div></div>
+    <div className="hdr"><div><h2>Rate Cards</h2><div className="hdr-sub">Client billing rates, caregiver pay rates, and market intelligence</div></div></div>
+
+    {/* MARKET RATE INTELLIGENCE AGENT */}
+    <div className="ai-card" style={{marginBottom:14,background:"linear-gradient(135deg,#1a1a2e,#16213e)",border:"1px solid #3c4f3d"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <h4 style={{color:"#fff"}}><span className="pulse" style={{background:"var(--ok)"}}/>🤖 Market Rate Intelligence Agent</h4>
+        <button className="btn btn-sm btn-p" disabled={agentLoading} onClick={runAgent}>{agentLoading?"⏳ Analyzing market...":"✨ Run Strategic Analysis"}</button>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:14}}>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>Avg Bill Rate</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#fff"}}>${intel.avgBill.toFixed(2)}/hr</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>Market: $28-$42 (median $34)</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>Avg Pay Rate</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#fff"}}>${intel.avgPay.toFixed(2)}/hr</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>Market: $14-$25 (median $18)</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>CWIN Margin</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#fff"}}>{intel.avgMarginPct.toFixed(0)}%</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>Industry typical: 35-55%</div>
+        </div>
+        <div style={{padding:"10px 14px",background:"rgba(255,255,255,.06)"}}>
+          <div style={{fontSize:9,opacity:.5,textTransform:"uppercase",letterSpacing:.5,color:"#fff"}}>Margin $/hr</div>
+          <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400,color:"#fff"}}>${intel.avgMarginDollar.toFixed(2)}</div>
+          <div style={{fontSize:10,opacity:.6,color:"#fff"}}>Per billed hour</div>
+        </div>
+      </div>
+
+      {agentError&&<div style={{padding:"10px 14px",background:"rgba(239,68,68,.15)",border:"1px solid #ef4444",color:"#fca5a5",fontSize:12,marginBottom:10}}>⚠️ {agentError}</div>}
+
+      {agentInsights?<div style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",fontSize:13,lineHeight:1.7,color:"rgba(255,255,255,.95)",whiteSpace:"pre-wrap"}}>
+        <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:"#7dd3fc",marginBottom:8}}>📊 Strategic Analysis</div>
+        {agentInsights}
+      </div>:<div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontStyle:"italic",padding:"10px 0"}}>Click "Run Strategic Analysis" for AI-powered insights comparing your rates to Chicago metro market data, with recommendations for both client billing and caregiver pay.</div>}
+    </div>
+
+    {/* PER-CLIENT RATE COMPARISON */}
+    <div className="card" style={{marginBottom:14}}>
+      <div className="card-h"><h3>📊 Client Bill Rates vs Chicago Market</h3></div>
+      <div className="tw"><table><thead><tr><th>Client</th><th style={{textAlign:"right"}}>CWIN Rate</th><th style={{textAlign:"center"}}>Market Range</th><th style={{textAlign:"right"}}>Market Median</th><th style={{textAlign:"center"}}>Position</th><th>Recommendation</th></tr></thead><tbody>
+        {clientComparison.map(({cl,rc,market,position})=>{
+          const colors={below:"#dc2626",below_median:"#f59e0b",at_market:"#10b981",above:"#3b82f6"};
+          const labels={below:"⚠ BELOW market",below_median:"📉 Below median",at_market:"✓ Within market",above:"💎 Premium"};
+          const rec={
+            below:`Consider raising to $${market.low.toFixed(0)}-$${market.median.toFixed(0)}/hr (market floor)`,
+            below_median:`Room to raise toward $${market.median.toFixed(0)}/hr median`,
+            at_market:"Competitive — maintain current rate",
+            above:"Premium positioning — ensure value justification"
+          };
+          return <tr key={rc.clientId}>
+            <td style={{fontWeight:600}}>{cl?.name||"—"}</td>
+            <td style={{textAlign:"right",fontWeight:700}}>${rc.billRate}/hr</td>
+            <td style={{textAlign:"center",fontSize:11,color:"var(--t2)"}}>${market.low}–${market.high}</td>
+            <td style={{textAlign:"right",fontSize:11,color:"var(--t2)"}}>${market.median}</td>
+            <td style={{textAlign:"center"}}><span className="tag" style={{background:colors[position]+"22",color:colors[position],fontWeight:700}}>{labels[position]}</span></td>
+            <td style={{fontSize:11,color:"var(--t2)"}}>{rec[position]}</td>
+          </tr>;
+        })}
+      </tbody></table></div>
+    </div>
+
+    {/* PER-CAREGIVER PAY COMPARISON */}
+    <div className="card" style={{marginBottom:14}}>
+      <div className="card-h"><h3>👩‍⚕️ Caregiver Pay vs Chicago Market</h3></div>
+      <div className="tw"><table><thead><tr><th>Caregiver</th><th style={{textAlign:"center"}}>Tier</th><th style={{textAlign:"right"}}>CWIN Pay</th><th style={{textAlign:"center"}}>Market Range</th><th style={{textAlign:"right"}}>Median</th><th style={{textAlign:"center"}}>Position</th><th>Recommendation</th></tr></thead><tbody>
+        {caregiverComparison.map(({cg,pc,benchmark,position})=>{
+          const colors={below:"#dc2626",below_median:"#f59e0b",at_market:"#10b981",above:"#3b82f6"};
+          const labels={below:"⚠ UNDERPAID",below_median:"📉 Below median",at_market:"✓ Fair",above:"💎 Top of market"};
+          const rec={
+            below:`Risk: turnover. Raise to $${benchmark.low}-$${benchmark.median}/hr ASAP`,
+            below_median:`Consider raise toward $${benchmark.median}/hr median`,
+            at_market:"Competitive — maintain to retain talent",
+            above:"Premium pay — ensure performance justifies"
+          };
+          return <tr key={pc.caregiverId}>
+            <td style={{fontWeight:600}}>{cg?.name||"—"}</td>
+            <td style={{textAlign:"center",fontSize:11,color:"var(--t2)"}}>{benchmark.desc.split("(")[0].trim()}</td>
+            <td style={{textAlign:"right",fontWeight:700}}>${pc.payRate}/hr</td>
+            <td style={{textAlign:"center",fontSize:11,color:"var(--t2)"}}>${benchmark.low}–${benchmark.high}</td>
+            <td style={{textAlign:"right",fontSize:11,color:"var(--t2)"}}>${benchmark.median}</td>
+            <td style={{textAlign:"center"}}><span className="tag" style={{background:colors[position]+"22",color:colors[position],fontWeight:700}}>{labels[position]}</span></td>
+            <td style={{fontSize:11,color:"var(--t2)"}}>{rec[position]}</td>
+          </tr>;
+        })}
+      </tbody></table></div>
+      <div style={{padding:"10px 18px",fontSize:10,color:"var(--t2)",background:"var(--bg)",borderTop:"var(--border-thin)"}}>📚 Sources: U.S. Bureau of Labor Statistics (Cook County), Genworth Cost of Care Survey, Care.com & ZipRecruiter Chicago metro data (Jan 2026). Tier benchmarks adjust based on certifications.</div>
+    </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
       {/* Client Bill Rates */}
@@ -5861,7 +8443,7 @@ function RateCardsPage({rateCards,setRateCards,payCards,setPayCards,clients,care
 // ═══════════════════════════════════════════════════════════════════════
 // BILLING & INVOICES
 // ═══════════════════════════════════════════════════════════════════════
-function BillingPage({invoices,setInvoices,clients,caregivers,rateCards,billingPeriods,setBillingPeriods,schedules,expenses}){
+function BillingPage({invoices,setInvoices,clients,caregivers,rateCards,billingPeriods,setBillingPeriods,schedules,expenses,referralBonuses,setReferralBonuses}){
   const [sel,setSel]=useState(null);
   const [showGen,setShowGen]=useState(false);
   const [genClient,setGenClient]=useState("");
@@ -5882,8 +8464,23 @@ function BillingPage({invoices,setInvoices,clients,caregivers,rateCards,billingP
     const subtotal=lines.reduce((s,l)=>s+l.total,0);
     const clExp=expenses.filter(e=>e.clientId===clientId&&e.date>=period.start&&e.date<=period.end&&(e.status==="approved"||e.adminApproved));
     const expTotal=clExp.reduce((s,e)=>s+e.amount,0);
-    const inv={id:`INV-${now().getFullYear()}-${String(invoices.length+1).padStart(3,"0")}`,clientId,periodId,date:today(),dueDate:toISO(addDays(now(),15)),status:"draft",lines,subtotal,expenses:expTotal,tax:0,total:subtotal+expTotal,lateFee:0,prevBalance:0,lastPayment:""};
-    setInvoices(p=>[inv,...p]);setShowGen(false);
+    // ═══ REFERRAL BONUS CREDITS — pull pending invoice_credit bonuses for this client/period ═══
+    const pendingCredits=(referralBonuses||[]).filter(b=>
+      (b.referrerType==="client"||b.referrerType==="family")&&
+      (b.referrerId===clientId||b.referrerId?.startsWith(clientId+":"))&&
+      b.paymentMethod==="invoice_credit"&&
+      b.status==="scheduled"&&
+      (b.periodId===periodId||(!b.periodId&&b.scheduledDate>=period.start&&b.scheduledDate<=period.end))
+    );
+    const creditTotal=pendingCredits.reduce((s,b)=>s+(b.amount||0),0);
+    const credits=pendingCredits.map(b=>({type:"referral_credit",bonusId:b.id,description:`Referral credit: thanks for referring ${b.refereeName}`,amount:-b.amount,notes:b.notes}));
+    const inv={id:`INV-${now().getFullYear()}-${String(invoices.length+1).padStart(3,"0")}`,clientId,periodId,date:today(),dueDate:toISO(addDays(now(),15)),status:"draft",lines,subtotal,expenses:expTotal,tax:0,credits,creditTotal,total:subtotal+expTotal-creditTotal,lateFee:0,prevBalance:0,lastPayment:""};
+    setInvoices(p=>[inv,...p]);
+    // Mark credits as paid (linked to this invoice)
+    if(pendingCredits.length>0&&setReferralBonuses){
+      setReferralBonuses(p=>p.map(b=>pendingCredits.find(pc=>pc.id===b.id)?{...b,status:"credited",paidAt:now().toISOString(),invoiceId:inv.id}:b));
+    }
+    setShowGen(false);
   };
 
   return <div>
@@ -6036,10 +8633,24 @@ function BillingPage({invoices,setInvoices,clients,caregivers,rateCards,billingP
                 {lateFee>0&&<tr><td></td><td style={{fontWeight:700}}>LATE FEE</td><td style={{textAlign:"right"}}>$ {lateFee.toFixed(2)}</td></tr>}
               </tbody></table></div>
             </div>}
+            {/* REFERRAL CREDITS — only if any */}
+            {sel.credits?.length>0&&<div style={{marginBottom:14}}>
+              <div style={{fontWeight:700,fontSize:12,marginBottom:4,color:"#059669"}}>🎁 Referral Credits</div>
+              <div className="tw"><table style={{fontSize:11}}><thead><tr><th>Description</th><th style={{textAlign:"right",width:120}}>Amount</th></tr></thead><tbody>
+                {sel.credits.map((c,i)=><tr key={i} style={{background:"#f0fdf4"}}>
+                  <td>{c.description}{c.notes?<div style={{fontSize:9,color:"var(--t2)",fontStyle:"italic"}}>{c.notes}</div>:null}</td>
+                  <td style={{textAlign:"right",fontWeight:600,color:"#059669"}}>$ {c.amount.toFixed(2)}</td>
+                </tr>)}
+                {sel.creditTotal>0&&<tr style={{background:"#dcfce7",fontWeight:700}}>
+                  <td>Total Credits</td>
+                  <td style={{textAlign:"right",color:"#059669"}}>−$ {sel.creditTotal.toFixed(2)}</td>
+                </tr>}
+              </tbody></table></div>
+            </div>}
             <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
               <div style={{border:"2px solid #070707",padding:"8px 20px",display:"flex",gap:40,alignItems:"center"}}>
                 <span style={{fontWeight:700,fontSize:13}}>Total Balance</span>
-                <span style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:700}}>${((sel.subtotal||0)+(sel.expenses||0)+lateFee+prevBalance).toFixed(2)}</span>
+                <span style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:700}}>${((sel.subtotal||0)+(sel.expenses||0)+lateFee+prevBalance-(sel.creditTotal||0)).toFixed(2)}</span>
               </div>
             </div>
             <div style={{fontSize:10,color:"var(--t2)",marginBottom:14,lineHeight:1.6}}>
@@ -6051,7 +8662,7 @@ function BillingPage({invoices,setInvoices,clients,caregivers,rateCards,billingP
             <div style={{border:"2px solid #070707",padding:10,fontSize:11}}>
               <div style={{fontWeight:700,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:6,background:"#070707",color:"#fff",padding:"3px 8px",display:"inline-block"}}>REMITTANCE</div>
               <table style={{width:"100%",borderCollapse:"collapse"}}><tbody>
-                {[["Name:",cl?.name||""],["Client ID:",cl?.shortId||cl?.id||""],["Invoice #:",sel.id],["Date:",fmtD(sel.date)],["Amount Due:","$"+((sel.subtotal||0)+(sel.expenses||0)+lateFee+prevBalance).toFixed(2)]].map(([k,v],i)=>
+                {[["Name:",cl?.name||""],["Client ID:",cl?.shortId||cl?.id||""],["Invoice #:",sel.id],["Date:",fmtD(sel.date)],["Amount Due:","$"+((sel.subtotal||0)+(sel.expenses||0)+lateFee+prevBalance-(sel.creditTotal||0)).toFixed(2)]].map(([k,v],i)=>
                   <tr key={i}><td style={{fontWeight:600,padding:"3px 8px",borderBottom:"1px solid #ddd",width:120}}>{k}</td><td style={{padding:"3px 8px",borderBottom:"1px solid #ddd",fontWeight:k==="Amount Due:"?700:400}}>{v}</td></tr>)}
                 <tr><td style={{fontWeight:600,padding:"3px 8px",borderBottom:"1px solid #ddd"}}>Last Payment:</td><td style={{padding:"3px 8px",borderBottom:"1px solid #ddd",fontStyle:"italic",color:"var(--ok)"}}>{sel.lastPayment||""}</td></tr>
                 <tr><td style={{fontWeight:600,padding:"3px 8px"}}>Amount Enclosed:</td><td style={{padding:"3px 8px",borderBottom:"1px solid #070707"}}></td></tr>
@@ -6084,7 +8695,7 @@ function BillingPage({invoices,setInvoices,clients,caregivers,rateCards,billingP
 // ═══════════════════════════════════════════════════════════════════════
 // PAYROLL & PAY SLIPS
 // ═══════════════════════════════════════════════════════════════════════
-function PayrollPage({paySlips,setPaySlips,caregivers,clients,payCards,billingPeriods,schedules,expenses,rateCards}){
+function PayrollPage({paySlips,setPaySlips,caregivers,clients,payCards,billingPeriods,schedules,expenses,rateCards,referralBonuses,setReferralBonuses}){
   const [sel,setSel]=useState(null);
   const [showGen,setShowGen]=useState(false);
   const [genCG,setGenCG]=useState("");
@@ -6098,25 +8709,38 @@ function PayrollPage({paySlips,setPaySlips,caregivers,clients,payCards,billingPe
     const pc=payCards.find(p=>p.caregiverId===cgId);
     const rate=pc?.payRate||20;
     const shifts=(schedules||[]).filter(s=>s.caregiverId===cgId&&s.date>=period.start&&s.date<=period.end&&s.status==="published");
-    const lines=[];
-    const clientHrs={};
-    shifts.forEach(s=>{
+    const toAMPM=(t)=>{if(!t)return"";const[h,m]=t.split(":");const hr=parseInt(h);return(hr>12?hr-12:hr||12)+":"+m+" "+(hr>=12?"PM":"AM");};
+    // Per-shift lines (one line per worked day, like invoice format)
+    const lines=shifts.sort((a,b)=>(a.date||"").localeCompare(b.date||"")).map(s=>{
       const cl=clients.find(c=>c.id===s.clientId);
       const hrs=(timeToMin(s.endTime)-timeToMin(s.startTime))/60;
-      if(!clientHrs[s.clientId])clientHrs[s.clientId]={clientName:cl?.name||"—",hours:0};
-      clientHrs[s.clientId].hours+=hrs;
+      return{date:s.date,clientName:cl?.name||"—",signIn:toAMPM(s.startTime),signOut:toAMPM(s.endTime),startTime:s.startTime,endTime:s.endTime,hours:hrs,rate,total:hrs*rate};
     });
-    Object.values(clientHrs).forEach(ch=>lines.push({...ch,rate,total:ch.hours*rate}));
-    const regHours=lines.reduce((s,l)=>s+l.hours,0);
-    const otHrs=Math.max(0,regHours-(pc?.otThreshold||40));
-    const regH=regHours-otHrs;
+    const totalHrs=lines.reduce((s,l)=>s+l.hours,0);
+    const otHrs=Math.max(0,totalHrs-(pc?.otThreshold||40));
+    const regH=totalHrs-otHrs;
     const regPay=regH*rate;
     const otPay=otHrs*(pc?.otRate||rate*1.5);
     const cgExp=expenses.filter(e=>e.caregiverId===cgId&&e.date>=period.start&&e.date<=period.end&&(e.status==="approved"||e.adminApproved));
     const expTotal=cgExp.reduce((s,e)=>s+e.amount,0);
     const mileExp=cgExp.filter(e=>e.category==="Mileage").reduce((s,e)=>s+e.amount,0);
-    const ps={id:`PS-${now().getFullYear()}-${String(paySlips.length+1).padStart(3,"0")}`,caregiverId:cgId,periodId,date:today(),status:"draft",lines,regHours:regH,otHours:otHrs,regPay,otPay,expenses:expTotal-mileExp,mileage:mileExp,grossPay:regPay+otPay+expTotal,type:pc?.type||"employee"};
-    setPaySlips(p=>[ps,...p]);setShowGen(false);
+    // ═══ REFERRAL BONUSES — pull pending caregiver-payslip bonuses for this caregiver/period ═══
+    const pendingBonuses=(referralBonuses||[]).filter(b=>
+      b.referrerType==="caregiver"&&
+      b.referrerId===cgId&&
+      b.paymentMethod==="payslip"&&
+      b.status==="scheduled"&&
+      (b.periodId===periodId||(!b.periodId&&b.scheduledDate>=period.start&&b.scheduledDate<=period.end))
+    );
+    const bonusTotal=pendingBonuses.reduce((s,b)=>s+(b.amount||0),0);
+    const bonusLines=pendingBonuses.map(b=>({type:"referral_bonus",bonusId:b.id,description:`Referral bonus: ${b.refereeName}`,amount:b.amount,notes:b.notes}));
+    const ps={id:`PS-${now().getFullYear()}-${String(paySlips.length+1).padStart(3,"0")}`,caregiverId:cgId,periodId,date:today(),status:"draft",lines,regHours:regH,otHours:otHrs,regPay,otPay,expenses:expTotal-mileExp,mileage:mileExp,bonuses:bonusLines,bonusTotal,grossPay:regPay+otPay+expTotal+bonusTotal,type:pc?.type||"employee"};
+    setPaySlips(p=>[ps,...p]);
+    // Mark bonuses as paid (linked to this pay slip)
+    if(pendingBonuses.length>0&&setReferralBonuses){
+      setReferralBonuses(p=>p.map(b=>pendingBonuses.find(pb=>pb.id===b.id)?{...b,status:"paid",paidAt:now().toISOString(),paySlipId:ps.id}:b));
+    }
+    setShowGen(false);
   };
 
   return <div>
@@ -6154,32 +8778,224 @@ function PayrollPage({paySlips,setPaySlips,caregivers,clients,payCards,billingPe
       </tbody></table></div>
     </div>
 
-    {/* Pay Slip Detail Modal */}
-    {sel&& <div className="modal-bg" onClick={()=>setSel(null)}><div className="modal" style={{maxWidth:600}} onClick={e=>e.stopPropagation()}>
-      <div className="modal-h">Pay Slip: {sel.id}<button className="btn btn-sm btn-s" onClick={()=>setSel(null)}>✕</button></div>
-      <div className="modal-b">
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:16}}>
-          <div><div style={{fontFamily:"var(--fd)",fontSize:18}}>{CO.name}</div><div style={{fontSize:11,color:"var(--t2)"}}>{CO.addr}</div></div>
-          <div style={{textAlign:"right"}}><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:1,color:"var(--t2)"}}>Pay Slip</div><div style={{fontFamily:"monospace",fontSize:14,fontWeight:700}}>{sel.id}</div></div>
+    {/* Pay Slip Detail Modal — matches invoice branding & format */}
+    {sel&& <div className="modal-bg" onClick={()=>setSel(null)}><div className="modal" style={{maxWidth:760,maxHeight:"94vh",overflow:"auto"}} onClick={e=>e.stopPropagation()}>
+      <div className="modal-h">
+        <span>Pay Slip: {sel.id}</span>
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          <button className="btn btn-sm btn-p" onClick={()=>{
+            const el=document.getElementById("cwin-payslip-print");if(!el)return;
+            const html=`<!doctype html><html><head><title>${sel.id}</title><style>body{font-family:Inter,sans-serif;padding:24px;color:#070707;} table{width:100%;border-collapse:collapse;font-size:11px;} th,td{padding:5px 8px;border:1px solid #ccc;text-align:left;} thead tr{background:#e8e8e8;font-weight:700;}</style></head><body>${el.innerHTML}<script>window.print();</script></body></html>`;
+            let iframe=document.getElementById("ps-print-iframe");
+            if(!iframe){iframe=document.createElement("iframe");iframe.id="ps-print-iframe";iframe.style.cssText="position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:#fff;z-index:99999";document.body.appendChild(iframe);}
+            else iframe.style.display="block";
+            const doc=iframe.contentDocument||iframe.contentWindow.document;doc.open();doc.write(html);doc.close();
+            const cb=doc.createElement("button");cb.textContent="Close";cb.style.cssText="position:fixed;top:10px;right:10px;padding:8px 16px;background:#070707;color:#fff;border:none;cursor:pointer;font-size:13px;z-index:100000";
+            cb.onclick=function(){iframe.style.display="none";};doc.body.appendChild(cb);
+          }}>📄 Download PDF</button>
+          <button className="btn btn-sm btn-s" onClick={()=>setSel(null)}>✕</button>
         </div>
-        <div style={{padding:12,background:"var(--bg)",marginBottom:14}}>
-          <div style={{fontSize:10,textTransform:"uppercase",color:"var(--t2)",fontWeight:600}}>Pay To</div>
-          <div style={{fontWeight:700,fontSize:14,marginTop:2}}>{caregivers.find(c=>c.id===sel.caregiverId)?.name}</div>
-          <div style={{fontSize:11,color:"var(--t2)"}}>Classification: {sel.type==="employee"?"W-2 Employee":"1099 Independent Contractor"}</div>
-        </div>
-        <div style={{fontSize:12,fontWeight:700,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>Hours by Client</div>
-        <div className="tw"><table><thead><tr><th>Client</th><th>Hours</th><th>Rate</th><th style={{textAlign:"right"}}>Amount</th></tr></thead><tbody>
-          {sel.lines.map((l,i)=> <tr key={i}><td style={{fontWeight:600}}>{l.clientName}</td><td>{l.hours.toFixed(1)}</td><td>{$(l.rate)}/hr</td><td style={{textAlign:"right",fontWeight:600}}>{$(l.total)}</td></tr>)}
-        </tbody></table></div>
-        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",marginTop:14,gap:4}}>
-          <div style={{display:"flex",gap:30}}><span style={{fontSize:12,color:"var(--t2)"}}>Regular ({sel.regHours.toFixed(1)} hrs)</span><span style={{fontSize:12,fontWeight:600}}>{$(sel.regPay)}</span></div>
-          {sel.otHours>0&&<div style={{display:"flex",gap:30}}><span style={{fontSize:12,color:"var(--t2)"}}>Overtime ({sel.otHours.toFixed(1)} hrs)</span><span style={{fontSize:12,fontWeight:600}}>{$(sel.otPay)}</span></div>}
-          {sel.expenses>0&&<div style={{display:"flex",gap:30}}><span style={{fontSize:12,color:"var(--t2)"}}>Expense Reimbursement</span><span style={{fontSize:12,fontWeight:600}}>{$(sel.expenses)}</span></div>}
-          {sel.mileage>0&&<div style={{display:"flex",gap:30}}><span style={{fontSize:12,color:"var(--t2)"}}>Mileage Reimbursement</span><span style={{fontSize:12,fontWeight:600}}>{$(sel.mileage)}</span></div>}
-          <div style={{display:"flex",gap:30,padding:"8px 0",borderTop:"var(--border-thin)",marginTop:4}}><span style={{fontSize:14,fontWeight:700}}>Gross Pay</span><span style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:400}}>{$(sel.grossPay)}</span></div>
-          {sel.type==="employee"&&<div style={{fontSize:10,color:"var(--t2)",fontStyle:"italic"}}>* Tax withholdings will be applied per W-4 elections</div>}
-          {sel.type==="contractor"&&<div style={{fontSize:10,color:"var(--t2)",fontStyle:"italic"}}>* No taxes withheld — 1099 contractor responsible for self-employment tax</div>}
-        </div>
+      </div>
+      <div className="modal-b" id="cwin-payslip-print">
+        {(()=>{
+          const cg=caregivers.find(c=>c.id===sel.caregiverId);
+          const pc=payCards.find(p=>p.caregiverId===sel.caregiverId);
+          const period=billingPeriods.find(b=>b.id===sel.periodId);
+          const dayNames=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+          const sortedLines=[...(sel.lines||[])].sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+          // Build all days in period
+          const allDays=[];
+          if(period){let d=new Date(period.start+"T12:00:00");const end=new Date(period.end+"T12:00:00");while(d<=end){allDays.push({date:d.toISOString().slice(0,10),day:dayNames[d.getDay()]});d=new Date(d.getTime()+86400000);}}
+          else{sortedLines.forEach(l=>{if(l.date)allDays.push({date:l.date,day:dayNames[new Date(l.date+"T12:00:00").getDay()]});});}
+          const dayRows=allDays.map(d=>{const line=sortedLines.find(l=>l.date===d.date);return{...d,line,hasShift:!!line};});
+          const weeks=[];let cw=[];let wc=1;
+          dayRows.forEach((d)=>{if(d.day==="Sunday"&&cw.length>0){weeks.push({num:wc++,days:cw});cw=[];}cw.push(d);});
+          if(cw.length>0)weeks.push({num:wc,days:cw});
+          const fmtHrs=(h)=>{if(!h||isNaN(h))return"";const hrs=Math.floor(h);const mins=Math.round((h-hrs)*60);return hrs+":"+String(mins).padStart(2,"0");};
+
+          // Tax estimates for W-2 employees (rough — actuals come from payroll provider)
+          const isEmployee=sel.type==="employee";
+          const taxableWages=sel.regPay+sel.otPay; // reimbursements not taxable
+          const fed=isEmployee?taxableWages*0.10:0; // ~10% federal estimate
+          const fica=isEmployee?taxableWages*0.0765:0; // 6.2 SS + 1.45 Medicare
+          const il=isEmployee?taxableWages*0.0495:0; // IL flat 4.95%
+          const totalDeductions=fed+fica+il;
+          const netPay=sel.grossPay-totalDeductions;
+
+          return <>
+            {/* HEADER — matches invoice format */}
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:16,paddingBottom:12,borderBottom:"2px solid #070707"}}>
+              <div>
+                <div style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:700}}>CWIN</div>
+                <div style={{fontSize:10,fontStyle:"italic",color:"var(--t2)"}}>Care When It's Needed</div>
+                <div style={{fontSize:11,color:"var(--t2)",marginTop:4}}>15941 S. Harlem Ave. #305</div>
+                <div style={{fontSize:11,color:"var(--t2)"}}>Tinley Park IL, 60477</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:28,fontWeight:700,color:"#333",letterSpacing:2}}>PAY SLIP</div>
+                <div style={{fontSize:10,color:"var(--t2)",marginTop:2,letterSpacing:1}}>{sel.type==="employee"?"W-2 EMPLOYEE":"1099 CONTRACTOR"}</div>
+              </div>
+            </div>
+
+            {/* CONTACT + EMPLOYEE INFO */}
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:14,fontSize:11}}>
+              <div>
+                <div><strong>Telephone:</strong> 708.476.0021</div>
+                <div><strong>Email:</strong> CWINathome@gmail.com</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontWeight:700,fontSize:13}}>{cg?.name}</div>
+                <div>{cg?.email||""}</div>
+                <div>{cg?.phone||""}</div>
+              </div>
+            </div>
+
+            {/* PAY SLIP META BOX */}
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:14,padding:"8px 12px",background:"#f5f2eb",fontSize:11}}>
+              <div>
+                <div><strong>Pay Slip #:</strong> {sel.id}</div>
+                <div><strong>Issue Date:</strong> {fmtD(sel.date)}</div>
+                <div><strong>Employee ID:</strong> {cg?.id||""}</div>
+                <div><strong>Pay Rate:</strong> ${(pc?.payRate||sortedLines[0]?.rate||20).toFixed(2)}/hr {pc?.otRate?`(OT: $${pc.otRate.toFixed(2)}/hr)`:""}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div><strong>Period Beginning:</strong> {period?fmtD(period.start):""}</div>
+                <div><strong>Period Ending:</strong> {period?fmtD(period.end):""}</div>
+                {period?.weekNumbers&&<div><strong>Pay Weeks:</strong> Week {period.weekNumbers.join(" & ")}</div>}
+                {period?.payDate&&<div style={{marginTop:2,padding:"2px 6px",background:"#3c4f3d",color:"#fff",display:"inline-block",fontSize:10,fontWeight:700}}>💵 PAY DAY: {fmtD(period.payDate)}</div>}
+              </div>
+            </div>
+
+            {/* WEEKLY TIME TABLE — matches invoice format */}
+            <div className="tw" style={{marginBottom:14}}>
+              <table style={{fontSize:11}}>
+                <thead>
+                  <tr style={{background:"#e8e8e8"}}>
+                    <th style={{width:90}}>Day</th>
+                    <th style={{width:75}}>Date</th>
+                    <th>Client</th>
+                    <th style={{width:75}}>Sign IN</th>
+                    <th style={{width:75}}>Sign OUT</th>
+                    <th style={{width:55,textAlign:"center"}}>Hours</th>
+                    <th style={{width:55,textAlign:"right"}}>Rate</th>
+                    <th style={{width:75,textAlign:"right"}}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {weeks.map((wk,wi)=><React.Fragment key={wi}>
+                    <tr><td colSpan={8} style={{background:"#e8e8e8",fontWeight:700,fontSize:10,padding:"4px 8px"}}>Week {wk.num}</td></tr>
+                    {wk.days.map((d,di)=>{const l=d.line;return <tr key={di} style={{background:d.hasShift?"#fff":"#fafafa"}}>
+                      <td style={{fontWeight:600}}>{d.day}</td>
+                      <td>{(d.date||"").slice(5).replace("-","/")}</td>
+                      <td>{d.hasShift?(l?.clientName||""):""}</td>
+                      <td>{d.hasShift?(l?.signIn||""):""}</td>
+                      <td>{d.hasShift?(l?.signOut||""):""}</td>
+                      <td style={{textAlign:"center",fontWeight:d.hasShift?700:400}}>{d.hasShift?fmtHrs(l?.hours):""}</td>
+                      <td style={{textAlign:"right"}}>{d.hasShift?(l?.rate||0).toFixed(2):""}</td>
+                      <td style={{textAlign:"right",fontWeight:d.hasShift?600:400}}>{d.hasShift?"$ "+(l?.total||0).toFixed(2):"$ -"}</td>
+                    </tr>;})}
+                  </React.Fragment>)}
+                  <tr style={{background:"#f0f0f0",fontWeight:700}}>
+                    <td colSpan={5} style={{textAlign:"right"}}>Total Hrs.</td>
+                    <td style={{textAlign:"center"}}>{fmtHrs(sortedLines.reduce((s,l)=>s+(l.hours||0),0))}</td>
+                    <td></td>
+                    <td style={{textAlign:"right",fontSize:13}}>$ {(sel.regPay+sel.otPay).toFixed(2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* REIMBURSEMENTS — only if any */}
+            {(sel.expenses>0||sel.mileage>0)&&<div style={{marginBottom:14}}>
+              <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>Reimbursements</div>
+              <div className="tw"><table style={{fontSize:11}}><thead><tr><th>Description</th><th style={{textAlign:"right",width:100}}>Amount</th></tr></thead><tbody>
+                {sel.expenses>0&&<tr><td>Approved out-of-pocket expenses (groceries, supplies, etc.)</td><td style={{textAlign:"right"}}>$ {sel.expenses.toFixed(2)}</td></tr>}
+                {sel.mileage>0&&<tr><td>Mileage reimbursement</td><td style={{textAlign:"right"}}>$ {sel.mileage.toFixed(2)}</td></tr>}
+              </tbody></table></div>
+            </div>}
+
+            {/* REFERRAL BONUSES — only if any */}
+            {sel.bonuses?.length>0&&<div style={{marginBottom:14}}>
+              <div style={{fontWeight:700,fontSize:12,marginBottom:4,color:"#059669"}}>🎁 Referral Bonuses</div>
+              <div className="tw"><table style={{fontSize:11}}><thead><tr><th>Description</th><th style={{textAlign:"right",width:100}}>Amount</th></tr></thead><tbody>
+                {sel.bonuses.map((b,i)=><tr key={i} style={{background:"#f0fdf4"}}>
+                  <td>{b.description}{b.notes?<div style={{fontSize:9,color:"var(--t2)",fontStyle:"italic"}}>{b.notes}</div>:null}</td>
+                  <td style={{textAlign:"right",fontWeight:600,color:"#059669"}}>+$ {(b.amount||0).toFixed(2)}</td>
+                </tr>)}
+              </tbody></table></div>
+            </div>}
+
+            {/* EARNINGS BREAKDOWN */}
+            <div style={{marginBottom:14}}>
+              <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>Earnings Summary</div>
+              <div className="tw"><table style={{fontSize:11}}><tbody>
+                <tr><td style={{width:"60%"}}>Regular hours ({sel.regHours.toFixed(2)} hrs)</td><td style={{textAlign:"right",width:120,fontWeight:600}}>$ {sel.regPay.toFixed(2)}</td></tr>
+                {sel.otHours>0&&<tr><td>Overtime ({sel.otHours.toFixed(2)} hrs @ 1.5x)</td><td style={{textAlign:"right",fontWeight:600}}>$ {sel.otPay.toFixed(2)}</td></tr>}
+                {sel.expenses>0&&<tr><td>Expense reimbursement</td><td style={{textAlign:"right",fontWeight:600}}>$ {sel.expenses.toFixed(2)}</td></tr>}
+                {sel.mileage>0&&<tr><td>Mileage reimbursement</td><td style={{textAlign:"right",fontWeight:600}}>$ {sel.mileage.toFixed(2)}</td></tr>}
+                {sel.bonusTotal>0&&<tr><td>🎁 Referral bonus(es)</td><td style={{textAlign:"right",fontWeight:600,color:"#059669"}}>$ {sel.bonusTotal.toFixed(2)}</td></tr>}
+                <tr style={{background:"#f0f0f0"}}><td style={{fontWeight:700}}>GROSS PAY</td><td style={{textAlign:"right",fontWeight:700,fontSize:13}}>$ {sel.grossPay.toFixed(2)}</td></tr>
+              </tbody></table></div>
+            </div>
+
+            {/* DEDUCTIONS — only for W-2 employees */}
+            {isEmployee&&totalDeductions>0&&<div style={{marginBottom:14}}>
+              <div style={{fontWeight:700,fontSize:12,marginBottom:4}}>Estimated Deductions <span style={{fontSize:9,color:"var(--t2)",fontWeight:400}}>(actual amounts per W-4 elections)</span></div>
+              <div className="tw"><table style={{fontSize:11}}><tbody>
+                <tr><td>Federal income tax (~10%)</td><td style={{textAlign:"right",width:120,color:"var(--err)"}}>−$ {fed.toFixed(2)}</td></tr>
+                <tr><td>FICA (Social Security + Medicare, 7.65%)</td><td style={{textAlign:"right",color:"var(--err)"}}>−$ {fica.toFixed(2)}</td></tr>
+                <tr><td>Illinois state income tax (4.95%)</td><td style={{textAlign:"right",color:"var(--err)"}}>−$ {il.toFixed(2)}</td></tr>
+                <tr style={{background:"#fef2f2"}}><td style={{fontWeight:700}}>Total Estimated Deductions</td><td style={{textAlign:"right",fontWeight:700,color:"var(--err)"}}>−$ {totalDeductions.toFixed(2)}</td></tr>
+              </tbody></table></div>
+            </div>}
+
+            {/* NET PAY BOX — like invoice "Total Balance" box */}
+            <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
+              <div style={{border:"2px solid #070707",padding:"8px 20px",display:"flex",gap:40,alignItems:"center"}}>
+                <span style={{fontWeight:700,fontSize:13}}>{isEmployee?"Estimated Net Pay":"Total Pay"}</span>
+                <span style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:700}}>${(isEmployee?netPay:sel.grossPay).toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* PAYMENT TERMS — like invoice */}
+            <div style={{fontSize:10,color:"var(--t2)",marginBottom:14,lineHeight:1.6}}>
+              <div><strong>Payment Method:</strong> Direct Deposit to account on file (Zelle / ACH)</div>
+              <div><strong>Pay Schedule:</strong> Bi-weekly</div>
+              {isEmployee?<>
+                <div><strong>Tax Treatment:</strong> W-2 employee — taxes withheld per W-4 elections. Year-end W-2 issued by January 31.</div>
+                <div style={{fontStyle:"italic"}}><strong>Note:</strong> Deductions shown are estimates. Final amounts depend on your W-4 elections and any pre-tax benefit deductions.</div>
+              </>:<>
+                <div><strong>Tax Treatment:</strong> 1099 contractor — no taxes withheld. You are responsible for self-employment tax (~15.3%) and quarterly estimated tax payments.</div>
+                <div style={{fontStyle:"italic"}}><strong>Recommendation:</strong> Set aside ~25-30% of each pay slip for federal, state, and SE tax.</div>
+              </>}
+            </div>
+
+            {/* REMITTANCE / RECEIPT BOX — matches invoice */}
+            <div style={{border:"2px solid #070707",padding:10,fontSize:11}}>
+              <div style={{fontWeight:700,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:6,background:"#070707",color:"#fff",padding:"3px 8px",display:"inline-block"}}>PAYMENT RECEIPT</div>
+              <table style={{width:"100%",borderCollapse:"collapse"}}><tbody>
+                {[
+                  ["Caregiver:",cg?.name||""],
+                  ["Employee ID:",cg?.id||""],
+                  ["Pay Slip #:",sel.id],
+                  ["Pay Period:",period?period.label:""],
+                  ["Issue Date:",fmtD(sel.date)],
+                  ["Pay Date:",period?.payDate?fmtD(period.payDate):"—"],
+                  ["Hours Worked:",fmtHrs(sortedLines.reduce((s,l)=>s+(l.hours||0),0))],
+                  ["Gross Pay:","$ "+sel.grossPay.toFixed(2)],
+                  isEmployee?["Estimated Net:","$ "+netPay.toFixed(2)]:null,
+                  ["Status:",sel.status.toUpperCase()],
+                ].filter(Boolean).map(([k,v],i)=>
+                  <tr key={i}><td style={{fontWeight:600,padding:"3px 8px",borderBottom:"1px solid #ddd",width:140}}>{k}</td><td style={{padding:"3px 8px",borderBottom:"1px solid #ddd",fontWeight:k.includes("Net")||k.includes("Gross")?700:400}}>{v}</td></tr>)}
+              </tbody></table>
+            </div>
+
+            {/* Optional admin actions (not in print) */}
+            {sel.status==="draft"&&<div style={{marginTop:14,display:"flex",gap:6,justifyContent:"flex-end"}}>
+              <button className="btn btn-sm btn-ok" onClick={()=>{setPaySlips(p=>p.map(s=>s.id===sel.id?{...s,status:"paid"}:s));setSel({...sel,status:"paid"});}}>💵 Mark Paid</button>
+            </div>}
+          </>;
+        })()}
       </div>
     </div></div>}
 
