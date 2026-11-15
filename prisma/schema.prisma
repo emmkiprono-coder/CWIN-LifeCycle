@@ -1,0 +1,339 @@
+// CWIN Care Operations OS — core data model (Phase 1)
+// Business operations backend: time ingestion, pay/rate rules, invoicing,
+// contractor pay slips, CRM, RBAC, reconciliation, locked-period billing.
+// This is deliberately separate from the live CWIN At Home (Supabase) app —
+// see README.md "Architecture & migration plan" for how the two connect.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- RBAC ----------
+
+enum Role {
+  OWNER
+  ADMIN
+  OFFICE_STAFF
+  COORDINATOR
+  CONTRACTOR // caregiver, paid as 1099/W2 via this system
+  READ_ONLY
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  role          Role
+  active        Boolean   @default(true)
+  caregiverId   String?   @unique
+  caregiver     Caregiver? @relation(fields: [caregiverId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  approvedReconciliations ReconciliationException[] @relation("ApprovedBy")
+  auditLogs               AuditLog[]
+}
+
+// ---------- CRM / Clients ----------
+
+model Client {
+  id              String   @id @default(cuid())
+  name            String
+  email           String?
+  phone           String?
+  address         String?
+  status          ClientStatus @default(ACTIVE)
+  billingRatePerHour Decimal @db.Decimal(10, 2) // client-facing rate (direct cost / 0.80)
+  directCostPerHour Decimal @db.Decimal(10, 2)  // what the caregiver is paid per hour for this client's care
+  notes           String?
+  externalRef     String?  // id in the CWIN At Home / Supabase app, for later reconciliation/migration
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  shifts          Shift[]
+  invoices        Invoice[]
+  crmActivities   CrmActivity[]
+  leads           Lead[]
+}
+
+enum ClientStatus {
+  LEAD
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  source      String?
+  stage       LeadStage @default(NEW)
+  client      Client?  @relation(fields: [clientId], references: [id])
+  clientId    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum LeadStage {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  WON
+  LOST
+}
+
+model CrmActivity {
+  id        String   @id @default(cuid())
+  client    Client   @relation(fields: [clientId], references: [id])
+  clientId  String
+  type      String   // call, email, visit, note
+  summary   String
+  occurredAt DateTime @default(now())
+  createdBy String?
+}
+
+// ---------- Contractors / Caregivers ----------
+
+model Caregiver {
+  id              String   @id @default(cuid())
+  name            String
+  email           String?
+  phone           String?
+  payType         PayType  @default(HOURLY_1099)
+  defaultPayRate  Decimal  @db.Decimal(10, 2) // fallback $/hr if a client-specific rate isn't set
+  connecteamId    String?  @unique // external id from Connecteam export, once known
+  externalRef     String?  // id in the CWIN At Home / Supabase app
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  shifts          Shift[]
+  payRules        PayRule[]
+  payStubs        PayStub[]
+  user            User?
+}
+
+enum PayType {
+  HOURLY_1099
+  HOURLY_W2
+  SALARY
+}
+
+// A pay rule overrides the caregiver's default rate for a specific client,
+// shift type, or time window (e.g. overnight differential, holiday rate).
+model PayRule {
+  id            String   @id @default(cuid())
+  caregiver     Caregiver @relation(fields: [caregiverId], references: [id])
+  caregiverId   String
+  client        Client?  @relation(fields: [clientId], references: [id])
+  clientId      String?
+  label         String   // e.g. "Overnight differential", "Holiday rate"
+  rateType      RateType @default(FLAT_HOURLY)
+  payRatePerHour Decimal @db.Decimal(10, 2)
+  multiplier    Decimal? @db.Decimal(4, 2) // used when rateType = MULTIPLIER (e.g. 1.5 for OT)
+  appliesFrom   DateTime?
+  appliesTo     DateTime?
+  priority      Int      @default(0) // higher wins when multiple rules match a shift
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+enum RateType {
+  FLAT_HOURLY
+  MULTIPLIER
+}
+
+// ---------- Time & Shifts ----------
+
+model Shift {
+  id            String      @id @default(cuid())
+  caregiver     Caregiver   @relation(fields: [caregiverId], references: [id])
+  caregiverId   String
+  client        Client      @relation(fields: [clientId], references: [id])
+  clientId      String
+  clockIn       DateTime
+  clockOut      DateTime?
+  durationHours Decimal?    @db.Decimal(6, 2) // computed on import/close
+  source        TimeSource  @default(MANUAL_IMPORT)
+  sourceRef     String?     // Connecteam shift id, once live API sync exists
+  status        ShiftStatus @default(PENDING_REVIEW)
+  payRatePerHour Decimal?   @db.Decimal(10, 2) // resolved rate at time of pay-run (from PayRule engine)
+  billRatePerHour Decimal?  @db.Decimal(10, 2) // resolved client bill rate at time of invoicing
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  exceptions    ReconciliationException[]
+  invoiceLines  InvoiceLine[]
+  payStubLines  PayStubLine[]
+}
+
+enum TimeSource {
+  MANUAL_IMPORT   // CSV/XLSX export from Connecteam (Phase 1)
+  CONNECTEAM_API  // live sync (Phase 2+)
+  MANUAL_ENTRY
+}
+
+enum ShiftStatus {
+  PENDING_REVIEW
+  APPROVED
+  EXCEPTION
+  BILLED
+  PAID
+}
+
+// Raw import batches, so every import is traceable and re-runnable.
+model TimeImportBatch {
+  id          String   @id @default(cuid())
+  fileName    String
+  importedAt  DateTime @default(now())
+  importedBy  String?
+  rowCount    Int
+  shiftCount  Int
+  errorCount  Int
+  rawSummary  Json?    // per-row parse notes, kept for audit
+}
+
+// ---------- Reconciliation ----------
+
+model ReconciliationException {
+  id            String   @id @default(cuid())
+  shift         Shift    @relation(fields: [shiftId], references: [id])
+  shiftId       String
+  type          ExceptionType
+  description   String
+  resolved      Boolean  @default(false)
+  resolvedBy    User?    @relation("ApprovedBy", fields: [resolvedById], references: [id])
+  resolvedById  String?
+  resolvedAt    DateTime?
+  createdAt     DateTime @default(now())
+}
+
+enum ExceptionType {
+  MISSING_CLOCK_OUT
+  OVERLAPPING_SHIFTS
+  RATE_MISMATCH
+  DURATION_OUTLIER     // e.g. shift far longer/shorter than scheduled
+  UNRECOGNIZED_CAREGIVER
+  UNRECOGNIZED_CLIENT
+  OTHER
+}
+
+// ---------- Billing periods (lockable) ----------
+
+model BillingPeriod {
+  id          String      @id @default(cuid())
+  startDate   DateTime
+  endDate     DateTime
+  status      PeriodStatus @default(OPEN)
+  lockedAt    DateTime?
+  lockedBy    String?
+  invoices    Invoice[]
+  payStubs    PayStub[]
+  createdAt   DateTime    @default(now())
+}
+
+enum PeriodStatus {
+  OPEN
+  REVIEW
+  LOCKED
+}
+
+// ---------- Invoicing (client-facing; document-only in v1, no live payment capture) ----------
+
+model Invoice {
+  id              String       @id @default(cuid())
+  client          Client       @relation(fields: [clientId], references: [id])
+  clientId        String
+  billingPeriod   BillingPeriod @relation(fields: [billingPeriodId], references: [id])
+  billingPeriodId String
+  invoiceNumber   String       @unique
+  status          InvoiceStatus @default(DRAFT)
+  subtotal        Decimal      @db.Decimal(10, 2)
+  total           Decimal      @db.Decimal(10, 2)
+  pdfUrl          String?      // generated document, stored externally (e.g. S3) once wired up
+  issuedAt        DateTime?
+  createdAt       DateTime     @default(now())
+
+  lines           InvoiceLine[]
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  SENT
+  PAID_MANUALLY  // marked paid outside the system (v1 has no live payment capture)
+  VOID
+}
+
+model InvoiceLine {
+  id          String   @id @default(cuid())
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId   String
+  shift       Shift?   @relation(fields: [shiftId], references: [id])
+  shiftId     String?
+  description String
+  hours       Decimal  @db.Decimal(6, 2)
+  rate        Decimal  @db.Decimal(10, 2)
+  amount      Decimal  @db.Decimal(10, 2)
+}
+
+// ---------- Contractor pay slips (document-only in v1, no live payout) ----------
+
+model PayStub {
+  id              String       @id @default(cuid())
+  caregiver       Caregiver    @relation(fields: [caregiverId], references: [id])
+  caregiverId     String
+  billingPeriod   BillingPeriod @relation(fields: [billingPeriodId], references: [id])
+  billingPeriodId String
+  stubNumber      String       @unique
+  status          PayStubStatus @default(DRAFT)
+  totalHours      Decimal      @db.Decimal(6, 2)
+  grossPay        Decimal      @db.Decimal(10, 2)
+  pdfUrl          String?
+  issuedAt        DateTime?
+  createdAt       DateTime     @default(now())
+
+  lines           PayStubLine[]
+}
+
+enum PayStubStatus {
+  DRAFT
+  ISSUED
+  PAID_MANUALLY
+  VOID
+}
+
+model PayStubLine {
+  id          String   @id @default(cuid())
+  payStub     PayStub  @relation(fields: [payStubId], references: [id])
+  payStubId   String
+  shift       Shift?   @relation(fields: [shiftId], references: [id])
+  shiftId     String?
+  description String
+  hours       Decimal  @db.Decimal(6, 2)
+  rate        Decimal  @db.Decimal(10, 2)
+  amount      Decimal  @db.Decimal(10, 2)
+}
+
+// ---------- Audit ----------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
