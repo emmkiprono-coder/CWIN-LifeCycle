@@ -1,19 +1,34 @@
 {
-  "name": "cwin-enterprise",
+  "name": "cwin-operations-os",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
+  "version": "0.1.0",
+  "description": "CWIN Care Operations OS — time ingestion, pay rules, invoicing, CRM, reconciliation, locked-period billing. Built alongside (not replacing, yet) the live CWIN At Home app.",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "@prisma/client": "5.20.0",
+    "xlsx": "0.18.5",
+    "pdfkit": "0.15.0",
+    "bullmq": "5.21.2",
+    "ioredis": "5.4.1",
+    "zod": "3.23.8"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.0"
+    "typescript": "5.6.3",
+    "@types/node": "20.17.6",
+    "@types/react": "18.3.12",
+    "@types/pdfkit": "0.13.4",
+    "prisma": "5.20.0"
   }
 }
